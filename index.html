@@ -97,18 +97,22 @@
   }
 
   .video-preview-box {
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #e60023;
-    border-radius: 12px;
-    max-width: 600px;
-    height: 130%;
-  }
+  margin: 40px auto;
+  padding: 20px;
+  border: 1px solid #e60023;
+  border-radius: 12px;
+  max-width: 1200px;
+  width: 90%;
+  box-sizing: border-box;
+  background: #fff;
+}
 
-  .video-preview-img {
-    width: 100%;
-    border-radius: 10px;
-  }
+.video-preview-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 10px;
+}
 
   .video-preview-button {
     display: inline-block;
