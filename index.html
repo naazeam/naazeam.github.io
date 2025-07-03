@@ -1,167 +1,172 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Naazeam Art | Strategic Video Marketing</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Outfit', sans-serif;
-      background-color: #fff;
-      color: #111;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-    .hero {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    .hero h1 {
-      font-size: 32px;
-      font-weight: 700;
-    }
-    .hero h2 {
-      color: #e60023;
-      font-size: 18px;
-      font-weight: 600;
-      margin: 16px 0;
-    }
-    .hero p {
-      font-size: 14px;
-      color: #333;
-      max-width: 600px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
-    .service-wrapper {
-      border: 2px solid #e60023;
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 60px;
-    }
-    .service-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
-    }
-    .service-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      transition: 0.3s ease;
-    }
-    .service-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-    }
-    .service-title {
-      font-weight: 700;
-      font-size: 16px;
-      color: #e60023;
-      margin-bottom: 8px;
-    }
-    .service-desc {
-      font-size: 13px;
-      color: #444;
-    }
-    .section {
-      margin-bottom: 60px;
-    }
-    .section h3 {
-      font-size: 20px;
-      color: #000;
-      margin-bottom: 12px;
-    }
-    .section p {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #444;
-    }
-    .cta {
-      text-align: center;
-      padding: 30px 20px;
-      border-top: 1px solid #eee;
-    }
-    .cta h4 {
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-    .cta a {
-      display: inline-block;
-      margin: 8px;
-      padding: 10px 20px;
-      background-color: #e60023;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .cta a:hover {
-      background-color: #c4001c;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naazeam Art | Strategic Video & Motion Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* === YOUR COMPLETE CSS COMBINED === */
+* { box-sizing: border-box; }
+html, body {
+  font-family: 'Outfit', sans-serif;
+  margin: 0; padding: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: #fff;
+}
+.hero-container {
+  max-width: 100%; padding: 40px 16px; margin: 0 auto; text-align: center; animation: fadeIn 1s ease-in;
+}
+.brand-heading { font-size: 28px; font-weight: 700; color: #000; margin-bottom: 8px; animation: slideIn 1s ease-in-out; }
+.headline { font-size: 18px; font-weight: 600; color: #e60023; margin-bottom: 16px; animation: slideIn 1.3s ease-in-out; }
+.subheadline { font-size: 13px; line-height: 1.5; color: #444; max-width: 600px; margin: 0 auto 30px auto; animation: fadeIn 1.8s ease-in-out; }
+.button-group {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; animation: fadeIn 2.2s ease-in-out;
+}
+.button {
+  padding: 10px 22px; background-color: #e60023; color: white; text-decoration: none; border-radius: 20px;
+  font-weight: 600; font-size: 13px; display: inline-block; transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.button:hover { background-color: #c4001c; transform: scale(1.05); }
+@keyframes fadeIn { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
+@keyframes slideIn { from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);} }
+
+.whatsapp-box {
+  max-width: 400px; margin: 40px auto; padding: 20px; border: 1px solid #e60023;
+  border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); background-color: #fff;
+}
+.whatsapp-box h3 { font-size: 17px; color: #e60023; font-weight: 700; margin-bottom: 14px; }
+.whatsapp-input {
+  width: 100%; padding: 10px 14px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 16px; resize: none;
+}
+.whatsapp-button {
+  background-color: #e60023; color: white; font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: 20px;
+  border: none; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.whatsapp-button:hover { background-color: #c4001c; transform: scale(1.05); }
+
+.video-preview-box {
+  max-width: 400px; margin: 40px auto; font-family: 'Segoe UI', sans-serif; padding: 20px;
+  border: 1px solid #e60023; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: #fff;
+  overflow: hidden; opacity: 0; transform: translateY(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.video-preview-box.visible { opacity: 1; transform: translateY(0); }
+.video-preview-img {
+  width: 100%; border-radius: 10px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: transform 0.4s ease;
+}
+.video-preview-img:hover { transform: scale(1.03); }
+.video-preview-button {
+  display: inline-block; margin-top: 16px; background-color: #e60023; color: white; text-decoration: none;
+  padding: 10px 22px; font-size: 14px; font-weight: 600; border-radius: 24px; transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.video-preview-button:hover { background-color: #c4001c; transform: scale(1.05); }
+
+.card-blog { max-width: 1024px; margin: 40px auto; }
+.card-wrapper {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;
+}
+.card {
+  background-color: white; border-radius: 20px; box-shadow: 0 3px 14px rgba(0,0,0,0.08); padding: 18px 16px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease; transform: scale(1); cursor: pointer;
+}
+.card:hover {
+  transform: scale(1.05); box-shadow: 0 6px 22px rgba(0,0,0,0.12); z-index: 2;
+}
+.card-title { font-size: 16px; font-weight: 700; color: #e60023; margin-bottom: 6px; }
+.card-price { font-size: 13px; font-weight: 600; color: #222; margin-bottom: 10px; }
+.card-body { font-size: 13px; color: #444; line-height: 1.5; }
+</style>
+
 </head>
+
 <body>
 
-  <div class="container">
-    <section class="hero">
-      <h1>Naazeam Art</h1>
-      <h2>Strategic Video Marketing for Product-Led Brands</h2>
-      <p>We craft high-impact product videos powered by AI, automation, and storytelling. From first impression to final conversion — every frame drives growth.</p>
-    </section>
-
-    <section class="service-wrapper">
-      <div class="service-grid">
-        <div class="service-card">
-          <div class="service-title">Product Demo Systems</div>
-          <div class="service-desc">I design video pipelines that simplify product communication and scale sales conversations. Ideal for demos, onboarding, and training.</div>
-        </div>
-        <div class="service-card">
-          <div class="service-title">AI-Powered Video Production</div>
-          <div class="service-desc">Custom-built automation tools, AI voiceovers, and generative assets — 70% faster output with uncompromised quality.</div>
-        </div>
-        <div class="service-card">
-          <div class="service-title">GTM Video Strategy</div>
-          <div class="service-desc">Videos that align with your product vision, sales funnels, and marketing campaigns — crafted to convert, not just decorate.</div>
-        </div>
-        <div class="service-card">
-          <div class="service-title">Video-Driven Business Wins</div>
-          <div class="service-desc">Case studies that prove impact — videos that helped close deals, reduce onboarding time, and elevate perceived value.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <h3>About Me</h3>
-      <p>I'm Najim — but clients call me the silent closer. I build video systems that scale, not just sparkle. With 6+ years in motion design, product marketing, and AI automation, I help brands communicate faster, better, and louder.</p>
-    </section>
-
-    <section class="section">
-      <h3>Portfolio Highlights</h3>
-      <p>Not just animations — assets that move your business. Every project links to a goal: educate, convert, or retain.</p>
-      <ul>
-        <li>Interactive Recruit Demo – 7-min feature walkthrough</li>
-        <li>PMS 360 Feedback Video – simplified complex workflows</li>
-        <li>Automation System Preview – AI bots, auto-descriptions</li>
-        <li>Before/After Case Study – speed vs quality vs outcome</li>
-      </ul>
-    </section>
-
-    <section class="cta">
-      <h4>Looking to close deals with your demo before your sales team speaks?</h4>
-      <a href="#">Book a Free Strategy Call</a>
-      <a href="#">Download My Portfolio</a>
-      <a href="#">Message Me on WhatsApp</a>
-    </section>
+<div class="hero-container">
+  <div class="brand-heading">Naazeam Art</div>
+  <div class="headline">Crafting Motion, Creating Impact</div>
+  <div class="subheadline">
+    We transform ideas into visually stunning motion graphics that captivate, communicate, and convert. From animated explainers to branded character videos, we help businesses connect through clear, creative storytelling.
   </div>
+  <div class="button-group">
+    <a href="https://www.naazeam.art/about-us" class="button" target="_blank">About Us</a>
+  </div>
+</div>
+
+<div class="whatsapp-box">
+  <h3>Send us a quick message on WhatsApp</h3>
+  <textarea id="wa-message" class="whatsapp-input" rows="4" placeholder="Type your message here..."></textarea>
+  <br>
+  <button class="whatsapp-button" onclick="sendWhatsApp()">Send via WhatsApp</button>
+</div>
+
+<div class="video-preview-box">
+  <a href="https://www.naazeam.art/portfolio" target="_blank">
+    <img class="video-preview-img" src="https://img.youtube.com/vi/rflC-aEzxCc/hqdefault.jpg" alt="Video Preview">
+  </a>
+  <a class="video-preview-button" href="https://www.naazeam.art/portfolio" target="_blank">View Portfolio</a>
+</div>
+
+<div class="card-blog">
+  <div class="card-wrapper">
+    <!-- blog 1 cards -->
+    <div class="card" onclick="sendToWhatsApp('Animated Explainer Videos', 'I want to explain my product or concept using engaging animation.')">
+      <div class="card-title">Animated Explainer Videos</div>
+      <div class="card-price">From ₹7000/min</div>
+      <div class="card-body">Simplify complex ideas through fun and engaging motion design that connects with your audience.</div>
+    </div>
+    <div class="card" onclick="sendToWhatsApp('Social Media Ad Campaigns', 'I want bold, eye-catching videos for social media.')">
+      <div class="card-title">Social Media Ad Campaigns</div>
+      <div class="card-price">From ₹5000/min</div>
+      <div class="card-body">Grab attention on Instagram, YouTube, or reels with powerful visuals tailored to your brand.</div>
+    </div>
+    <div class="card" onclick="sendToWhatsApp('Character Design & Animation', 'I need unique animated characters for my brand.')">
+      <div class="card-title">Character Design & Animation</div>
+      <div class="card-price">From ₹12000/min</div>
+      <div class="card-body">Tell your story with original characters crafted for emotional and memorable impact.</div>
+    </div>
+    <div class="card" onclick="sendToWhatsApp('Logo Animation', 'I want to animate my logo for intros/outros.')">
+      <div class="card-title">Logo Animation</div>
+      <div class="card-price">From ₹5000/min</div>
+      <div class="card-body">Transform static logos into stunning, animated openers or end screens for your videos.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function sendWhatsApp() {
+  const message = document.getElementById("wa-message").value.trim();
+  if (message) {
+    const encoded = encodeURIComponent(message);
+    const phone = "919096972905";
+    const link = `https://wa.me/${phone}?text=${encoded}`;
+    window.open(link, '_blank');
+  } else {
+    alert("Please type your message before sending.");
+  }
+}
+
+function sendToWhatsApp(service, details) {
+  const phone = "919096972905";
+  const text = `Hi! I'm interested in your service: ${service}. ${details} Can we discuss this further?`;
+  const link = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  window.open(link, '_blank');
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+});
+const previewBox = document.querySelector('.video-preview-box');
+observer.observe(previewBox);
+</script>
 
 </body>
 </html>
