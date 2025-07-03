@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naazeam Art | Contact</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #fff;
+  overflow-x: hidden;
+}
+
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  z-index: 999;
+  background: transparent;
+  transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.3s ease;
+}
+.navbar.hidden {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+.navbar.scrolled {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #fff;
+}
+.navbar .logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+  text-decoration: none;
+}
+.menu {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.menu a {
+  text-decoration: none;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.menu a:hover {
+  transform: scale(1.1);
+  color: #e60023;
+}
+.more-wrapper {
+  position: relative;
+}
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 10px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+  z-index: 998;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.dropdown.show {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
+}
+.dropdown a {
+  opacity: 0;
+  transform: translateY(10px);
+  color: #000;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 14px;
+  border-radius: 8px;
+  transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease, background 0.3s ease;
+}
+.dropdown.show a {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dropdown.show a:nth-child(1) { transition-delay: 0.1s; }
+.dropdown.show a:nth-child(2) { transition-delay: 0.2s; }
+.dropdown.show a:nth-child(3) { transition-delay: 0.3s; }
+.dropdown a:hover {
+  color: #e60023;
+  background-color: #f8f8f8;
+  transform: scale(1.05);
+}
+
+/* Contact Section */
+.contact-section {
+  max-width: 600px;
+  margin: 100px auto 40px auto;
+  text-align: center;
+}
+.contact-section h2 {
+  color: #e60023;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+.contact-section p {
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 20px;
+}
+.contact-links {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+.contact-links a {
+  display: inline-block;
+  padding: 12px 28px;
+  background: #e60023;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 24px;
+  font-weight: 600;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.contact-links a:hover {
+  background-color: #c4001c;
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar" id="navbar">
+  <a href="/" class="logo">Naazeam Art</a>
+  <div class="menu">
+    <a href="/">Home</a>
+    <div class="more-wrapper">
+      <a href="javascript:void(0);" id="moreBtn">More</a>
+      <div class="dropdown" id="dropdown">
+        <a href="/about-us.html">About Us</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="contact-section">
+  <h2>Contact Us</h2>
+  <p>Let’s talk about your next project. Get in touch with us via WhatsApp, email, or book a call — we’ll respond quickly!</p>
+
+  <div class="contact-links">
+    <a href="https://wa.me/919096972905" target="_blank">WhatsApp Chat</a>
+    <a href="mailto:hello@naazeam.art">Send an Email</a>
+    <a href="#">Book a Call</a>
+  </div>
+</div>
+
+<script>
+// Navbar show/hide on scroll
+let lastScrollY = window.scrollY;
+const navbar = document.getElementById('navbar');
+let timer;
+
+function showNavbar() {
+  navbar.classList.remove('hidden');
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    navbar.classList.add('hidden');
+  }, 5000);
+}
+
+window.addEventListener('scroll', () => {
+  const currentScrollY = window.scrollY;
+  if (currentScrollY > lastScrollY) {
+    navbar.classList.add('hidden');
+  } else {
+    navbar.classList.add('scrolled');
+    showNavbar();
+  }
+  lastScrollY = currentScrollY;
+});
+
+// Dropdown Logic
+const moreBtn = document.getElementById('moreBtn');
+const dropdown = document.getElementById('dropdown');
+let hideTimer;
+
+moreBtn.addEventListener('mouseenter', () => {
+  clearTimeout(hideTimer);
+  dropdown.classList.add('show');
+});
+moreBtn.addEventListener('mouseleave', () => {
+  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
+});
+dropdown.addEventListener('mouseenter', () => {
+  clearTimeout(hideTimer);
+});
+dropdown.addEventListener('mouseleave', () => {
+  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
+});
+</script>
+
+</body>
+</html>
