@@ -4,262 +4,137 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Schedule a Call | Naazeam Art</title>
+
+<!-- Fonts & FullCalendar -->
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
+
 <style>
-* { box-sizing: border-box; }
-body {
-  font-family: 'Outfit', sans-serif;
-  margin: 0;
-  padding: 20px;
-  background: #fff;
-  color: #444;
-  overflow-x: hidden;
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:'Outfit',sans-serif;
+  padding:20px;
+  background:#fff;
+  color:#444;
+  overflow-x:hidden;
 }
 
-/* Navbar */
-.navbar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 24px;
-  z-index: 999;
-  background: transparent;
-  transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.3s ease;
+/* ─────────────────── NAVBAR ─────────────────── */
+.navbar{
+  position:fixed;top:0;left:0;right:0;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 24px;
+  z-index:999;
+  background:transparent;
+  transition:transform .4s ease,opacity .4s ease,box-shadow .3s ease;
 }
-.navbar.hidden {
-  opacity: 0;
-  transform: translateY(-100%);
+.navbar.hidden{opacity:0;transform:translateY(-100%)}
+.navbar.scrolled{box-shadow:0 4px 12px rgba(0,0,0,.1);background:#fff}
+.navbar .logo{font-weight:700;font-size:18px;color:#000;text-decoration:none}
+
+.menu{display:flex;gap:20px;align-items:center}
+.menu a{text-decoration:none;color:#000;font-size:14px;font-weight:600;transition:transform .3s ease,color .3s ease}
+.menu a:hover{transform:scale(1.1);color:#e60023}
+
+.more-wrapper{position:relative}
+.dropdown{
+  display:none;position:absolute;top:28px;right:0;
+  background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);
+  padding:10px;flex-direction:column;gap:8px;min-width:150px;z-index:998;
+  opacity:0;transform:scale(.95);transition:opacity .3s ease,transform .3s ease
 }
-.navbar.scrolled {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  background: #fff;
+.dropdown.show{display:flex;opacity:1;transform:scale(1)}
+.dropdown a{
+  opacity:0;transform:translateY(10px);color:#000;
+  padding:6px 12px;font-size:14px;border-radius:8px;text-decoration:none;
+  transition:opacity .4s ease,transform .4s ease,color .3s ease,background .3s ease
 }
-.navbar .logo {
-  font-weight: 700;
-  font-size: 18px;
-  color: #000;
-  text-decoration: none;
+.dropdown.show a{opacity:1;transform:translateY(0)}
+.dropdown.show a:nth-child(1){transition-delay:.1s}
+.dropdown.show a:nth-child(2){transition-delay:.2s}
+.dropdown.show a:nth-child(3){transition-delay:.3s}
+.dropdown a:hover{color:#e60023;background:#f8f8f8;transform:scale(1.05)}
+
+/* ───────────────── BOOKING BOX ───────────────── */
+h1{
+  text-align:center;color:#e60023;font-size:28px;margin:100px 0 20px
 }
-.menu {
-  display: flex;
-  gap: 20px;
-  align-items: center;
+.container{
+  max-width:1200px;margin:0 auto 40px;border:2px solid #e60023;border-radius:16px;
+  padding:20px;display:flex;flex-wrap:wrap;gap:40px
 }
-.menu a {
-  text-decoration: none;
-  color: #000;
-  font-size: 14px;
-  font-weight: 600;
-  transition: transform 0.3s ease, color 0.3s ease;
+.left,.right{flex:1 1 300px}
+.left{max-width:400px}
+.right{max-width:700px}
+
+.left h2{font-size:22px;color:#000;margin-bottom:12px}
+.left p{font-size:14px;line-height:1.5;margin-bottom:20px}
+
+.message-box{
+  width:100%;padding:12px;border:1px solid #e60023;border-radius:50px;
+  font-size:14px;margin-bottom:20px;outline:none
 }
-.menu a:hover {
-  transform: scale(1.1);
-  color: #e60023;
+.message-box.invalid{border-color:red}
+
+.book-btn{
+  display:inline-block;padding:12px 32px;background:#e60023;color:#fff;border:none;
+  border-radius:50px;font-size:16px;cursor:pointer;transition:transform .3s ease,box-shadow .3s ease
 }
-.more-wrapper {
-  position: relative;
+.book-btn:hover{background:#c4001c;transform:scale(1.05)}
+
+#calendar{
+  background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:8px
 }
-.dropdown {
-  display: none;
-  position: absolute;
-  top: 28px;
-  right: 0;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 10px;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 150px;
-  z-index: 998;
-  opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+.fc .fc-button{background:#e60023;border:none;border-radius:6px;font-size:12px;padding:4px 8px}
+.fc .fc-button:hover{background:#c4001c}
+.fc .fc-toolbar-title{font-size:16px;color:#000}
+.fc .fc-day-today{background:#fff5f7!important}
+
+.time-slots{text-align:center;margin-top:20px}
+.time-slots h3{color:#e60023;margin-bottom:10px}
+.slot{
+  display:inline-block;margin:5px;padding:6px 14px;border:1px solid #e60023;border-radius:20px;
+  cursor:pointer;font-size:12px;transition:.2s
 }
-.dropdown.show {
-  display: flex;
-  opacity: 1;
-  transform: scale(1);
-}
-.dropdown a {
-  opacity: 0;
-  transform: translateY(10px);
-  color: #000;
-  padding: 6px 12px;
-  text-decoration: none;
-  font-size: 14px;
-  border-radius: 8px;
-  transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease, background 0.3s ease;
-}
-.dropdown.show a {
-  opacity: 1;
-  transform: translateY(0);
-}
-.dropdown.show a:nth-child(1) { transition-delay: 0.1s; }
-.dropdown.show a:nth-child(2) { transition-delay: 0.2s; }
-.dropdown.show a:nth-child(3) { transition-delay: 0.3s; }
-.dropdown a:hover {
-  color: #e60023;
-  background-color: #f8f8f8;
-  transform: scale(1.05);
+.slot:hover,.slot.selected{background:#e60023;color:#fff;transform:scale(1.05)}
+
+@media(max-width:768px){
+  .container{flex-direction:column;gap:20px}
+  .left,.right{max-width:100%}
 }
 
-/* Booking Section */
-.container {
-  max-width: 1200px;
-  margin: 100px auto 20px auto;
-  border: 2px solid #e60023;
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 40px;
+/* ───────────────── MODAL ───────────────── */
+.modal{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.4);z-index:999
 }
-.left, .right {
-  flex: 1 1 300px;
+.modal-content{
+  background:#fff;padding:30px;border-radius:16px;text-align:center;max-width:400px;
+  animation:fadeIn .3s ease
 }
-.left { max-width: 400px; }
-.right { max-width: 700px; }
-h1 {
-  text-align: center;
-  color: #e60023;
-  font-size: 28px;
-  margin: 80px 0 20px 0;
+.modal-content h2{color:#e60023;margin-bottom:20px}
+.modal-content p{font-size:14px;margin-bottom:20px}
+.ok-btn{
+  background:#e60023;color:#fff;padding:10px 24px;font-size:15px;border:none;border-radius:24px;
+  cursor:pointer;animation:pulse 1.2s infinite
 }
-.left h2 {
-  font-size: 22px;
-  color: #000;
-  margin-bottom: 12px;
-}
-.left p {
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-.message-box {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #e60023;
-  border-radius: 50px;
-  font-size: 14px;
-  margin-bottom: 20px;
-  outline: none;
-}
-.message-box.invalid { border-color: red; }
-.book-btn {
-  display: inline-block;
-  padding: 12px 32px;
-  background: #e60023;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-size: 16px;
-  cursor: pointer;
-}
-.book-btn:hover {
-  background: #c4001c;
-  transform: scale(1.05);
-}
-#calendar {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 8px;
-}
-.fc .fc-button {
-  background: #e60023;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  padding: 4px 8px;
-}
-.fc .fc-button:hover { background: #c4001c; }
-.fc .fc-toolbar-title { font-size: 16px; color: #000; }
-.fc .fc-day-today { background-color: #fff5f7 !important; }
-.time-slots {
-  text-align: center;
-  margin-top: 20px;
-}
-.time-slots h3 {
-  color: #e60023;
-  margin-bottom: 10px;
-}
-.slot {
-  display: inline-block;
-  margin: 5px;
-  padding: 6px 14px;
-  border: 1px solid #e60023;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 12px;
-}
-.slot:hover, .slot.selected {
-  background: #e60023;
-  color: #fff;
-  transform: scale(1.05);
-}
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    gap: 20px;
-  }
-  .left, .right { max-width: 100%; }
-}
-/* Modal */
-.modal {
-  position: fixed;
-  top:0; left:0; right:0; bottom:0;
-  display: none;
-  align-items:center;
-  justify-content:center;
-  background: rgba(0,0,0,0.4);
-  z-index: 999;
-}
-.modal-content {
-  background: #fff;
-  padding: 30px;
-  border-radius: 16px;
-  text-align:center;
-  max-width: 400px;
-  animation: fadeIn 0.3s ease;
-}
-.modal-content h2 {
-  color: #e60023;
-  margin-bottom: 20px;
-}
-.modal-content p {
-  font-size:14px;
-  margin-bottom:20px;
-}
-.ok-btn {
-  background: #e60023;
-  color: #fff;
-  padding: 10px 24px;
-  font-size: 15px;
-  border: none;
-  border-radius: 24px;
-  cursor: pointer;
-  animation: pulse 1.2s infinite;
-}
-.ok-btn:hover {
-  background: #c4001c;
-}
-@keyframes fadeIn {
-  from {opacity:0; transform:scale(0.9);}
-  to {opacity:1; transform:scale(1);}
-}
-@keyframes pulse {
-  0% {transform: scale(1);}
-  50% {transform: scale(1.05);}
-  100% {transform: scale(1);}
-}
+.ok-btn:hover{background:#c4001c}
+
+@keyframes fadeIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
 </style>
 </head>
 
 <body>
+
+<!-- Hidden fallback form sent to Formspree -->
+<form id="fallbackForm" action="https://formspree.io/f/xdkzjdol" method="POST" style="display:none;">
+  <input type="hidden" name="message" id="fallbackMessage">
+  <input type="hidden" name="date" id="fallbackDate">
+  <input type="hidden" name="slot" id="fallbackSlot">
+</form>
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
@@ -282,10 +157,11 @@ h1 {
 <div class="container">
   <div class="left">
     <h2>Let’s talk!</h2>
-    <p>Please pick an available <strong>Tuesday</strong>, <strong>Wednesday</strong>, or <strong>Thursday</strong> from the calendar and select a time slot between <strong>11:00 and 17:00 IST</strong>.</p>
+    <p>Please pick an available <strong>Tuesday – Thursday</strong> and a time between <strong>11 AM – 5 PM IST</strong>.</p>
     <p>We look forward to connecting and discussing your project!</p>
 
-    <input type="text" id="message" class="message-box" placeholder="Type your message…" value="I’d like to discuss my project.">
+    <input type="text" id="message" class="message-box"
+           placeholder="Type your message…" value="I’d like to discuss my project.">
   </div>
 
   <div class="right">
@@ -296,12 +172,13 @@ h1 {
       <div id="slots"></div>
     </div>
 
-    <div style="text-align:center; margin-top:20px;">
+    <div style="text-align:center;margin-top:20px;">
       <button class="book-btn" id="bookBtn">Book Now</button>
     </div>
   </div>
 </div>
 
+<!-- Acknowledgement modal -->
 <div class="modal" id="ackModal">
   <div class="modal-content">
     <h2>Booking Confirmed</h2>
@@ -310,136 +187,120 @@ h1 {
   </div>
 </div>
 
+<!-- FullCalendar script -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-<script>
-const messageEl = document.getElementById('message');
-const bookBtn = document.getElementById('bookBtn');
-const slotsEl = document.getElementById('slots');
-const timeSlotsBox = document.getElementById('time-slots');
-const modal = document.getElementById('ackModal');
-const ackText = document.getElementById('ackText');
-const okBtn = document.getElementById('okBtn');
 
+<script>
+/* ---------- grab common elements ---------- */
+const messageEl   = document.getElementById('message');
+const bookBtn     = document.getElementById('bookBtn');
+const slotsEl     = document.getElementById('slots');
+const timeBox     = document.getElementById('time-slots');
+const modal       = document.getElementById('ackModal');
+const ackText     = document.getElementById('ackText');
+const okBtn       = document.getElementById('okBtn');
+
+/* ---------- calendar & slots ---------- */
 let selectedDate = null;
 let selectedSlot = null;
 
-function populateSlots(dateStr) {
-  timeSlotsBox.style.display = 'block';
+function populateSlots(){
+  timeBox.style.display = 'block';
   slotsEl.innerHTML = '';
   selectedSlot = null;
 
-  for (let hour = 11; hour <= 17; hour++) {
-    const slot = document.createElement('div');
-    slot.classList.add('slot');
-    slot.textContent = `${hour}:00 IST`;
-    slot.onclick = () => {
-      document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected"));
-      slot.classList.add("selected");
-      selectedSlot = slot.textContent;
+  for(let h=11; h<=17; h++){
+    const s = document.createElement('div');
+    s.className = 'slot';
+    s.textContent = `${h}:00 IST`;
+    s.onclick = () =>{
+      document.querySelectorAll('.slot').forEach(x=>x.classList.remove('selected'));
+      s.classList.add('selected');
+      selectedSlot = s.textContent;
     };
-    slotsEl.appendChild(slot);
+    slotsEl.appendChild(s);
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  const calendarEl = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    selectable: true,
-    height: 'auto',
-    select: function(info) {
-      const date = new Date(info.startStr);
-      const day = date.getDay();
-      if (![2,3,4].includes(day)) {
-        alert("⚠️ Please select a Tuesday, Wednesday, or Thursday.");
-        return;
+document.addEventListener('DOMContentLoaded',()=>{
+  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'),{
+    initialView:'dayGridMonth',
+    selectable:true,
+    height:'auto',
+    dateClick(info){ calendar.select(info.dateStr); },
+    select(info){
+      const d = new Date(info.startStr);
+      if(![2,3,4].includes(d.getDay())){
+        alert('⚠️ Select Tue–Thu only'); return;
       }
-
       selectedDate = info.startStr;
-      populateSlots(selectedDate);
+      populateSlots();
     },
-    validRange: { start: new Date().toISOString().split("T")[0] },
-    dateClick: function(info) {
-      calendar.select(info.dateStr);
-    }
+    validRange:{ start:new Date().toISOString().split('T')[0] }
   });
-
   calendar.render();
 
-  const now = new Date();
-  for (let i = 0; i < 30; i++) {
-    const d = new Date();
-    d.setDate(now.getDate() + i);
-    if ([2,3,4].includes(d.getDay())) {
-      const dateStr = d.toISOString().split('T')[0];
-      calendar.select(dateStr);
-      selectedDate = dateStr;
-      populateSlots(dateStr);
+  /* pre-select next available Tue/Wed/Thu */
+  const today = new Date();
+  for(let i=0;i<30;i++){
+    const d=new Date(); d.setDate(today.getDate()+i);
+    if([2,3,4].includes(d.getDay())){
+      const ds=d.toISOString().split('T')[0];
+      calendar.select(ds);
+      selectedDate=ds;
+      populateSlots();
       break;
     }
   }
 });
 
-bookBtn.addEventListener('click', () => {
-  if (!selectedDate || !selectedSlot) {
-    alert("⚠️ Please select a date and a time slot first.");
-    return;
-  }
-  if (messageEl.value.trim().length < 5) {
+/* ---------- booking button ---------- */
+bookBtn.onclick = ()=>{
+  if(!selectedDate||!selectedSlot){ alert('⚠️ Pick a date & slot'); return; }
+  if(messageEl.value.trim().length<5){
     messageEl.classList.add('invalid');
-    alert("⚠️ Please enter at least 5 characters in the message.");
-    return;
+    alert('⚠️ Enter at least 5 chars'); return;
   }
   messageEl.classList.remove('invalid');
 
-  ackText.innerHTML = `
-    Your call is booked on <strong>${selectedDate}</strong> at <strong>${selectedSlot}</strong>.<br>
-    Message: "${messageEl.value}"
-  `;
-  modal.style.display = 'flex';
-});
+  ackText.innerHTML=`Your call is booked on <strong>${selectedDate}</strong> at <strong>${selectedSlot}</strong>.<br>Message: “${messageEl.value}”`;
+  modal.style.display='flex';
+};
 
-okBtn.addEventListener('click', () => {
-  modal.style.display = 'none';
-});
+/* ---------- modal OK ---------- */
+okBtn.onclick = ()=>{
+  modal.style.display='none';
 
-// Navbar hide/show logic
-let lastScrollY = window.scrollY;
+  /* push to Formspree */
+  document.getElementById('fallbackMessage').value = messageEl.value.trim();
+  document.getElementById('fallbackDate').value    = selectedDate;
+  document.getElementById('fallbackSlot').value    = selectedSlot;
+  document.getElementById('fallbackForm').submit();
+};
+
+/* ---------- navbar hide/show ---------- */
+let lastY = window.scrollY, hideT;
 const navbar = document.getElementById('navbar');
-let timer;
-
-function showNavbar() {
+function showBar(){
   navbar.classList.remove('hidden');
-  clearTimeout(timer);
-  timer = setTimeout(() => { navbar.classList.add('hidden'); }, 5000);
+  clearTimeout(hideT);
+  hideT=setTimeout(()=>navbar.classList.add('hidden'),5000);
 }
-window.addEventListener('scroll', () => {
-  const currentScrollY = window.scrollY;
-  if (currentScrollY > lastScrollY) {
-    navbar.classList.add('hidden');
-  } else {
-    navbar.classList.add('scrolled');
-    showNavbar();
-  }
-  lastScrollY = currentScrollY;
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  if(y>lastY){ navbar.classList.add('hidden'); }
+  else{ navbar.classList.add('scrolled'); showBar(); }
+  lastY=y;
 });
 
-// Dropdown
-const moreBtn = document.getElementById('moreBtn');
-const dropdown = document.getElementById('dropdown');
-let hideTimer;
-
-moreBtn.addEventListener('mouseenter', () => {
-  clearTimeout(hideTimer);
-  dropdown.classList.add('show');
-});
-moreBtn.addEventListener('mouseleave', () => {
-  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
-});
-dropdown.addEventListener('mouseenter', () => clearTimeout(hideTimer));
-dropdown.addEventListener('mouseleave', () => {
-  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
-});
+/* ---------- dropdown hover ---------- */
+const moreBtn   = document.getElementById('moreBtn');
+const dropdown  = document.getElementById('dropdown');
+let dTimer;
+moreBtn.addEventListener('mouseenter',()=>{clearTimeout(dTimer);dropdown.classList.add('show');});
+moreBtn.addEventListener('mouseleave',()=>{dTimer=setTimeout(()=>dropdown.classList.remove('show'),1000);});
+dropdown.addEventListener('mouseenter',()=>clearTimeout(dTimer));
+dropdown.addEventListener('mouseleave',()=>{dTimer=setTimeout(()=>dropdown.classList.remove('show'),1000);});
 </script>
 </body>
 </html>
