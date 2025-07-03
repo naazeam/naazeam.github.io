@@ -160,21 +160,43 @@
     font-size: 12px;
     color: #555;
   }
+.hero-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.hero-container {
+  flex: 0 0 70%;
+  text-align: left;
+}
+
+.whatsapp-box {
+  flex: 0 0 28%;
+}
 </style>
 
-<div class="hero-whatsapp-container">
+<div class="hero-wrapper">
   <div class="hero-container">
     <div class="brand-heading">Naazeam Art</div>
     <div class="headline">Crafting Motion, Creating Impact</div>
     <div class="subheadline">
-      We transform ideas into stunning motion graphics that captivate and convert. From animated explainers to branded characters, we help businesses connect through creative storytelling.
+      We transform ideas into visually stunning motion graphics...
     </div>
-    <a href="https://www.naazeam.art/about-us" class="button" target="_blank">About Us</a>
+    <div class="button-group">
+      <a href="https://www.naazeam.art/about-us" class="button" target="_blank">About Us</a>
+    </div>
   </div>
 
   <div class="whatsapp-box">
     <h3>Send us a quick message on WhatsApp</h3>
     <textarea id="wa-message" class="whatsapp-input" rows="4" placeholder="Type your message here..."></textarea>
+    <br>
     <button class="whatsapp-button" onclick="sendWhatsApp()">Send via WhatsApp</button>
   </div>
 </div>
