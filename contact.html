@@ -199,6 +199,7 @@ const timeBox     = document.getElementById('time-slots');
 const modal       = document.getElementById('ackModal');
 const ackText     = document.getElementById('ackText');
 const okBtn       = document.getElementById('okBtn');
+const hostEmail   = "contact@naazeam.art";
 
 /* ---------- calendar & slots ---------- */
 let selectedDate = null;
@@ -279,20 +280,22 @@ okBtn.addEventListener('click', () => {
 
   /* ------------- 2) open Google-Calendar tab ------------- */
   // selectedDate = "YYYY-MM-DD",  selectedSlot = "HH:00 IST"
-  const startLocal = new Date(`${selectedDate}T${selectedSlot.slice(0,2).padStart(2,'0')}:00:00+05:30`);
-  const endLocal   = new Date(startLocal.getTime() + 30*60*1000);   // 30-min meeting
+  const startLocal = new Date(
+  `${selectedDate}T${selectedSlot.slice(0,2).padStart(2,'0')}:00:00+05:30`
+);
+const endLocal = new Date(startLocal.getTime() + 30 * 60 * 1000);  // 30-min slot
 
-  const iso = d => d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
-  const gcalURL =
-    `https://calendar.google.com/calendar/render?action=TEMPLATE` +
-    `&text=${encodeURIComponent('Call with Naazeam Art')}` +
-    `&dates=${iso(startLocal)}/${iso(endLocal)}` +
-    `&details=${encodeURIComponent(messageEl.value)}` +
-    `&sf=true&output=xml`;
+const iso = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
 
-  window.open(gcalURL, '_blank');
+const params = new URLSearchParams({
+  action: 'TEMPLATE',
+  text:  'Call with Naazeam Art',
+  dates: `${iso(startLocal)}/${iso(endLocal)}`,
+  details: messageEl.value,
+  add: hostEmail,               // ← auto-fills the “Guests” field
+  sf: 'true',
+  output: 'xml'
 });
-
 
 /* ---------- navbar hide/show ---------- */
 let lastY = window.scrollY, hideT;
