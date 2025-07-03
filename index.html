@@ -1,9 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Naazeam Art | Strategic Video Marketing</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   font-family: 'Outfit', sans-serif;
@@ -14,6 +20,7 @@ body {
   overflow-x: hidden;
 }
 
+/* Hero */
 .hero-container {
   max-width: 1200px;
   margin: 20px auto;
@@ -58,6 +65,7 @@ body {
   background-color: #c4001c;
 }
 
+/* Portfolio */
 .portfolio-box {
   max-width: 1200px;
   margin: 40px auto;
@@ -103,6 +111,13 @@ body {
   padding: 0 16px;
 }
 
+.service-wrapper {
+  border: 2px solid #e60023;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 60px;
+}
+
 .card-wrapper {
   display: grid;
   gap: 24px;
@@ -138,15 +153,8 @@ body {
   font-size: 13px;
   color: #555;
 }
-  .service-wrapper {
-  border: 2px solid #e60023;  /* This already gives a red border */
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 60px;
-}
 
-
-/* Responsive Improvements */
+/* Responsive */
 @media (max-width: 767px) {
   .button {
     padding: 16px 32px;
@@ -155,7 +163,7 @@ body {
 
   .card-wrapper {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 32px;
   }
 
   .card {
@@ -185,19 +193,23 @@ body {
   }
 }
 </style>
+</head>
 
+<body>
 
-  <div class="hero-container">
-    <div class="brand-heading">Naazeam Art</div>
-    <div class="headline">Crafting Motion, Creating Impact</div>
-    <div class="subheadline">
-      We transform ideas into stunning motion graphics that captivate and convert. From animated explainers to branded characters, we help businesses connect through creative storytelling.
-    </div>
-    <div class="button-group">
-      <a href="https://www.naazeam.art/about-us" class="button" target="_blank">About Us</a>
-    </div>
+<!-- Hero -->
+<div class="hero-container">
+  <div class="brand-heading">Naazeam Art</div>
+  <div class="headline">Crafting Motion, Creating Impact</div>
+  <div class="subheadline">
+    We transform ideas into stunning motion graphics that captivate and convert. From animated explainers to branded characters, we help businesses connect through creative storytelling.
   </div>
+  <div class="button-group">
+    <a href="https://www.naazeam.art/about-us" class="button" target="_blank">About Us</a>
+  </div>
+</div>
 
+<!-- Portfolio -->
 <div class="portfolio-box">
   <div class="video-preview-box">
     <a href="https://www.naazeam.art/portfolio" target="_blank">
@@ -207,42 +219,43 @@ body {
   </div>
 </div>
 
+<!-- Services -->
 <div class="cards-container">
-  <div class="card-wrapper">
-    <!-- Add all 4 cards here -->
-    <!-- Example card: -->
-    <div class="card" onclick="sendToWhatsApp('Animated Explainer Videos', 'I want to explain my product or concept using engaging animation.')">
-  <div class="card-title">Animated Explainer Videos</div>
-  <div class="card-price">From ₹7000/min</div>
-  <div class="card-body">Simplify complex ideas with fun and engaging motion design that connects with your audience.</div>
-</div>
+  <div class="service-wrapper">
+    <div class="card-wrapper">
+      <div class="card" onclick="sendToWhatsApp('Animated Explainer Videos', 'I want to explain my product or concept using engaging animation.')">
+        <div class="card-title">Animated Explainer Videos</div>
+        <div class="card-price">From ₹7000/min</div>
+        <div class="card-body">Simplify complex ideas with fun and engaging motion design that connects with your audience.</div>
+      </div>
 
-<div class="card" onclick="sendToWhatsApp('Social Media Ad Campaigns', 'I want bold, eye-catching videos for social media.')">
-  <div class="card-title">Social Media Ad Campaigns</div>
-  <div class="card-price">From ₹5000/min</div>
-  <div class="card-body">Grab attention on Instagram, YouTube, or reels with powerful visuals tailored to your brand.</div>
-</div>
+      <div class="card" onclick="sendToWhatsApp('Social Media Ad Campaigns', 'I want bold, eye-catching videos for social media.')">
+        <div class="card-title">Social Media Ad Campaigns</div>
+        <div class="card-price">From ₹5000/min</div>
+        <div class="card-body">Grab attention on Instagram, YouTube, or reels with powerful visuals tailored to your brand.</div>
+      </div>
 
-<div class="card" onclick="sendToWhatsApp('Character Design & Animation', 'I need unique animated characters for my brand.')">
-  <div class="card-title">Character Design & Animation</div>
-  <div class="card-price">From ₹12000/min</div>
-  <div class="card-body">Tell your story with original characters crafted for emotional and memorable impact.</div>
-</div>
+      <div class="card" onclick="sendToWhatsApp('Character Design & Animation', 'I need unique animated characters for my brand.')">
+        <div class="card-title">Character Design & Animation</div>
+        <div class="card-price">From ₹12000/min</div>
+        <div class="card-body">Tell your story with original characters crafted for emotional and memorable impact.</div>
+      </div>
 
-<div class="card" onclick="sendToWhatsApp('Logo Animation', 'I want to animate my logo for intros/outros.')">
-  <div class="card-title">Logo Animation</div>
-  <div class="card-price">From ₹5000/min</div>
-  <div class="card-body">Transform static logos into stunning, animated openers or end screens for your videos.</div>
-</div>
-    
-    <!-- Duplicate above for all 12 cards -->
+      <div class="card" onclick="sendToWhatsApp('Logo Animation', 'I want to animate my logo for intros/outros.')">
+        <div class="card-title">Logo Animation</div>
+        <div class="card-price">From ₹5000/min</div>
+        <div class="card-body">Transform static logos into stunning, animated openers or end screens for your videos.</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-
-  function sendToWhatsApp(service, details) {
-    const text = `Hi! I'm interested in your service: ${service}. ${details}`;
-    window.open(`https://wa.me/919096972905?text=${encodeURIComponent(text)}`, '_blank');
-  }
+function sendToWhatsApp(service, details) {
+  const text = `Hi! I'm interested in your service: ${service}. ${details}`;
+  window.open(`https://wa.me/919096972905?text=${encodeURIComponent(text)}`, '_blank');
+}
 </script>
+
+</body>
+</html>
