@@ -58,37 +58,6 @@
     font-weight: 600;
   }
 
-  .whatsapp-box {
-    flex: 1 1 30%;
-    max-width: 400px;
-    padding: 20px;
-    border: 1px solid #e60023;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-  }
-
-  .whatsapp-box h3 {
-    color: #e60023;
-    font-size: 16px;
-  }
-
-  .whatsapp-input {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    margin-bottom: 10px;
-  }
-
-  .whatsapp-button {
-    background: #e60023;
-    color: #fff;
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-  }
 
   .portfolio-box {
     max-width: 800px;
@@ -185,7 +154,6 @@
 }
 </style>
 
-<div class="hero-wrapper">
   <div class="hero-container">
     <div class="brand-heading">Naazeam Art</div>
     <div class="headline">Crafting Motion, Creating Impact</div>
@@ -196,14 +164,6 @@
       <a href="https://www.naazeam.art/about-us" class="button" target="_blank">About Us</a>
     </div>
   </div>
-
-  <div class="whatsapp-box">
-    <h3>Send us a quick message on WhatsApp</h3>
-    <textarea id="wa-message" class="whatsapp-input" rows="4" placeholder="Type your message here..."></textarea>
-    <br>
-    <button class="whatsapp-button" onclick="sendWhatsApp()">Send via WhatsApp</button>
-  </div>
-</div>
 
 <div class="portfolio-box">
   <div class="video-preview-box">
@@ -295,15 +255,6 @@
 </div>
 
 <script>
-  function sendWhatsApp() {
-    const message = document.getElementById("wa-message").value.trim();
-    if (message) {
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/919096972905?text=${encoded}`, '_blank');
-    } else {
-      alert("Please type your message before sending.");
-    }
-  }
 
   function sendToWhatsApp(service, details) {
     const text = `Hi! I'm interested in your service: ${service}. ${details}`;
