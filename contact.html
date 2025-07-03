@@ -3,16 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Naazeam Art | Contact</title>
+<title>Schedule a Call | Naazeam Art</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
-
 body {
   font-family: 'Outfit', sans-serif;
   margin: 0;
   padding: 20px;
   background: #fff;
+  color: #444;
   overflow-x: hidden;
 }
 
@@ -106,55 +107,161 @@ body {
   transform: scale(1.05);
 }
 
-/* Contact Section */
-.contact-section {
-  max-width: 600px;
-  margin: 100px auto 40px auto;
-  text-align: center;
-}
-.contact-section h2 {
-  color: #e60023;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-.contact-section p {
-  font-size: 15px;
-  color: #444;
-  margin-bottom: 20px;
-}
-.contact-links {
+/* Booking Section */
+.container {
+  max-width: 1200px;
+  margin: 100px auto 20px auto;
+  border: 2px solid #e60023;
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
 }
-.contact-links a {
+.left, .right {
+  flex: 1 1 300px;
+}
+.left { max-width: 400px; }
+.right { max-width: 700px; }
+h1 {
+  text-align: center;
+  color: #e60023;
+  font-size: 28px;
+  margin: 80px 0 20px 0;
+}
+.left h2 {
+  font-size: 22px;
+  color: #000;
+  margin-bottom: 12px;
+}
+.left p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.message-box {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e60023;
+  border-radius: 50px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  outline: none;
+}
+.message-box.invalid { border-color: red; }
+.book-btn {
   display: inline-block;
-  padding: 12px 28px;
+  padding: 12px 32px;
   background: #e60023;
   color: #fff;
-  text-decoration: none;
-  border-radius: 24px;
-  font-weight: 600;
-  transition: transform 0.3s ease, background-color 0.3s ease;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  cursor: pointer;
 }
-.contact-links a:hover {
-  background-color: #c4001c;
+.book-btn:hover {
+  background: #c4001c;
   transform: scale(1.05);
 }
-
-/* Responsive */
-@media (max-width: 767px) {
-  .menu {
-    flex-wrap: wrap;
-    justify-content: center;
+#calendar {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 8px;
+}
+.fc .fc-button {
+  background: #e60023;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.fc .fc-button:hover { background: #c4001c; }
+.fc .fc-toolbar-title { font-size: 16px; color: #000; }
+.fc .fc-day-today { background-color: #fff5f7 !important; }
+.time-slots {
+  text-align: center;
+  margin-top: 20px;
+}
+.time-slots h3 {
+  color: #e60023;
+  margin-bottom: 10px;
+}
+.slot {
+  display: inline-block;
+  margin: 5px;
+  padding: 6px 14px;
+  border: 1px solid #e60023;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.slot:hover, .slot.selected {
+  background: #e60023;
+  color: #fff;
+  transform: scale(1.05);
+}
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: 20px;
   }
+  .left, .right { max-width: 100%; }
+}
+/* Modal */
+.modal {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  display: none;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+}
+.modal-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  text-align:center;
+  max-width: 400px;
+  animation: fadeIn 0.3s ease;
+}
+.modal-content h2 {
+  color: #e60023;
+  margin-bottom: 20px;
+}
+.modal-content p {
+  font-size:14px;
+  margin-bottom:20px;
+}
+.ok-btn {
+  background: #e60023;
+  color: #fff;
+  padding: 10px 24px;
+  font-size: 15px;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  animation: pulse 1.2s infinite;
+}
+.ok-btn:hover {
+  background: #c4001c;
+}
+@keyframes fadeIn {
+  from {opacity:0; transform:scale(0.9);}
+  to {opacity:1; transform:scale(1);}
+}
+@keyframes pulse {
+  0% {transform: scale(1);}
+  50% {transform: scale(1.05);}
+  100% {transform: scale(1);}
 }
 </style>
 </head>
 
 <body>
 
+<!-- Navbar -->
 <nav class="navbar" id="navbar">
   <a href="/" class="logo">Naazeam Art</a>
   <div class="menu">
@@ -164,25 +271,139 @@ body {
       <div class="dropdown" id="dropdown">
         <a href="/about-us.html">About Us</a>
         <a href="/portfolio.html">Portfolio</a>
-        <a href="/contact.html">Contact</a>
+        <a href="https://wa.me/919096972905" target="_blank">Contact</a>
       </div>
     </div>
   </div>
 </nav>
 
-<div class="contact-section">
-  <h2>Contact Us</h2>
-  <p>Let’s talk about your next project. Get in touch with us via WhatsApp, email, or book a call — we’ll respond quickly!</p>
+<h1>Schedule a Call</h1>
 
-  <div class="contact-links">
-    <a href="https://wa.me/919096972905" target="_blank">WhatsApp Chat</a>
-    <a href="mailto:hello@naazeam.art">Send an Email</a>
-    <a href="#">Book a Call</a>
+<div class="container">
+  <div class="left">
+    <h2>Let’s talk!</h2>
+    <p>Please pick an available <strong>Tuesday</strong>, <strong>Wednesday</strong>, or <strong>Thursday</strong> from the calendar and select a time slot between <strong>11:00 and 17:00 IST</strong>.</p>
+    <p>We look forward to connecting and discussing your project!</p>
+
+    <input type="text" id="message" class="message-box" placeholder="Type your message…" value="I’d like to discuss my project.">
+  </div>
+
+  <div class="right">
+    <div id="calendar"></div>
+
+    <div class="time-slots" id="time-slots" style="display:none;">
+      <h3>Available Time Slots</h3>
+      <div id="slots"></div>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+      <button class="book-btn" id="bookBtn">Book Now</button>
+    </div>
   </div>
 </div>
 
+<div class="modal" id="ackModal">
+  <div class="modal-content">
+    <h2>Booking Confirmed</h2>
+    <p id="ackText"></p>
+    <button class="ok-btn" id="okBtn">OK</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script>
-// Navbar show/hide on scroll
+const messageEl = document.getElementById('message');
+const bookBtn = document.getElementById('bookBtn');
+const slotsEl = document.getElementById('slots');
+const timeSlotsBox = document.getElementById('time-slots');
+const modal = document.getElementById('ackModal');
+const ackText = document.getElementById('ackText');
+const okBtn = document.getElementById('okBtn');
+
+let selectedDate = null;
+let selectedSlot = null;
+
+function populateSlots(dateStr) {
+  timeSlotsBox.style.display = 'block';
+  slotsEl.innerHTML = '';
+  selectedSlot = null;
+
+  for (let hour = 11; hour <= 17; hour++) {
+    const slot = document.createElement('div');
+    slot.classList.add('slot');
+    slot.textContent = `${hour}:00 IST`;
+    slot.onclick = () => {
+      document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected"));
+      slot.classList.add("selected");
+      selectedSlot = slot.textContent;
+    };
+    slotsEl.appendChild(slot);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const calendarEl = document.getElementById('calendar');
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    selectable: true,
+    height: 'auto',
+    select: function(info) {
+      const date = new Date(info.startStr);
+      const day = date.getDay();
+      if (![2,3,4].includes(day)) {
+        alert("⚠️ Please select a Tuesday, Wednesday, or Thursday.");
+        return;
+      }
+
+      selectedDate = info.startStr;
+      populateSlots(selectedDate);
+    },
+    validRange: { start: new Date().toISOString().split("T")[0] },
+    dateClick: function(info) {
+      calendar.select(info.dateStr);
+    }
+  });
+
+  calendar.render();
+
+  const now = new Date();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date();
+    d.setDate(now.getDate() + i);
+    if ([2,3,4].includes(d.getDay())) {
+      const dateStr = d.toISOString().split('T')[0];
+      calendar.select(dateStr);
+      selectedDate = dateStr;
+      populateSlots(dateStr);
+      break;
+    }
+  }
+});
+
+bookBtn.addEventListener('click', () => {
+  if (!selectedDate || !selectedSlot) {
+    alert("⚠️ Please select a date and a time slot first.");
+    return;
+  }
+  if (messageEl.value.trim().length < 5) {
+    messageEl.classList.add('invalid');
+    alert("⚠️ Please enter at least 5 characters in the message.");
+    return;
+  }
+  messageEl.classList.remove('invalid');
+
+  ackText.innerHTML = `
+    Your call is booked on <strong>${selectedDate}</strong> at <strong>${selectedSlot}</strong>.<br>
+    Message: "${messageEl.value}"
+  `;
+  modal.style.display = 'flex';
+});
+
+okBtn.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
+
+// Navbar hide/show logic
 let lastScrollY = window.scrollY;
 const navbar = document.getElementById('navbar');
 let timer;
@@ -190,11 +411,8 @@ let timer;
 function showNavbar() {
   navbar.classList.remove('hidden');
   clearTimeout(timer);
-  timer = setTimeout(() => {
-    navbar.classList.add('hidden');
-  }, 5000);
+  timer = setTimeout(() => { navbar.classList.add('hidden'); }, 5000);
 }
-
 window.addEventListener('scroll', () => {
   const currentScrollY = window.scrollY;
   if (currentScrollY > lastScrollY) {
@@ -206,7 +424,7 @@ window.addEventListener('scroll', () => {
   lastScrollY = currentScrollY;
 });
 
-// Dropdown Logic
+// Dropdown
 const moreBtn = document.getElementById('moreBtn');
 const dropdown = document.getElementById('dropdown');
 let hideTimer;
@@ -218,13 +436,10 @@ moreBtn.addEventListener('mouseenter', () => {
 moreBtn.addEventListener('mouseleave', () => {
   hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
 });
-dropdown.addEventListener('mouseenter', () => {
-  clearTimeout(hideTimer);
-});
+dropdown.addEventListener('mouseenter', () => clearTimeout(hideTimer));
 dropdown.addEventListener('mouseleave', () => {
   hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
 });
 </script>
-
 </body>
 </html>
