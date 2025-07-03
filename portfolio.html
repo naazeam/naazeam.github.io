@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naazeam Art | Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #fff;
+  overflow-x: hidden;
+}
+
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  z-index: 999;
+  background: transparent;
+  transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.3s ease;
+}
+.navbar.hidden {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+.navbar.scrolled {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #fff;
+}
+.navbar .logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+  text-decoration: none;
+}
+.menu {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.menu a {
+  text-decoration: none;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.menu a:hover {
+  transform: scale(1.1);
+  color: #e60023;
+}
+.more-wrapper {
+  position: relative;
+}
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 10px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+  z-index: 998;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.dropdown.show {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
+}
+.dropdown a {
+  opacity: 0;
+  transform: translateY(10px);
+  color: #000;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 14px;
+  border-radius: 8px;
+  transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease, background 0.3s ease;
+}
+.dropdown.show a {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dropdown.show a:nth-child(1) { transition-delay: 0.1s; }
+.dropdown.show a:nth-child(2) { transition-delay: 0.2s; }
+.dropdown.show a:nth-child(3) { transition-delay: 0.3s; }
+.dropdown a:hover {
+  color: #e60023;
+  background-color: #f8f8f8;
+  transform: scale(1.05);
+}
+
+/* Portfolio Gallery */
+.portfolio-gallery {
+  max-width: 800px;
+  margin: 100px auto 40px auto;
+  font-family: 'Outfit', sans-serif;
+  padding: 0 16px;
+}
+.video-block {
+  margin-bottom: 40px;
+}
+.video-frame {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.video-info {
+  text-align: left;
+  margin-top: 12px;
+}
+.video-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e60023;
+  margin-bottom: 6px;
+}
+.video-description {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar" id="navbar">
+  <a href="/" class="logo">Naazeam Art</a>
+  <div class="menu">
+    <a href="/">Home</a>
+    <div class="more-wrapper">
+      <a href="javascript:void(0);" id="moreBtn">More</a>
+      <div class="dropdown" id="dropdown">
+        <a href="/about-us.html">About Us</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="https://wa.me/919096972905" target="_blank">Contact</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="portfolio-gallery">
+
+  <div class="video-block">
+    <iframe class="video-frame"
+      src="https://www.youtube.com/embed/rflC-aEzxCc"
+      title="3D Character Animation Showcase"
+      allowfullscreen></iframe>
+    <div class="video-info">
+      <div class="video-title">3D Character Animation Showcase</div>
+      <div class="video-description">Stylized 3D motion graphics for product storytelling and branding.</div>
+    </div>
+  </div>
+
+  <div class="video-block">
+    <iframe class="video-frame"
+      src="https://www.youtube.com/embed/EqVfto4uJVc"
+      title="Character Animation for Brand Storytelling"
+      allowfullscreen></iframe>
+    <div class="video-info">
+      <div class="video-title">Character Animation for Brand Storytelling</div>
+      <div class="video-description">Fluid character animation blending expressive movement with business storytelling.</div>
+    </div>
+  </div>
+
+  <div class="video-block">
+    <iframe class="video-frame"
+      src="https://www.youtube.com/embed/_gh4lggw-AY"
+      title="Motion Design Teaser"
+      allowfullscreen></iframe>
+    <div class="video-info">
+      <div class="video-title">Motion Design Teaser</div>
+      <div class="video-description">High-energy teaser combining bold typography and animated graphics.</div>
+    </div>
+  </div>
+
+  <div class="video-block">
+    <iframe class="video-frame"
+      src="https://www.youtube.com/embed/oaeZYoxP1tk"
+      title="UI Animation Demo"
+      allowfullscreen></iframe>
+    <div class="video-info">
+      <div class="video-title">UI Animation Demo</div>
+      <div class="video-description">Animated walk-through of app interface transitions for product demos.</div>
+    </div>
+  </div>
+
+  <div class="video-block">
+    <iframe class="video-frame"
+      src="https://www.youtube.com/embed/i1PDPHyj1Wg"
+      title="Explainer Video Showcase"
+      allowfullscreen></iframe>
+    <div class="video-info">
+      <div class="video-title">Explainer Video Showcase</div>
+      <div class="video-description">Animated explainer video simplifying product concepts with engaging visuals.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Navbar show/hide on scroll
+let lastScrollY = window.scrollY;
+const navbar = document.getElementById('navbar');
+let timer;
+
+function showNavbar() {
+  navbar.classList.remove('hidden');
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    navbar.classList.add('hidden');
+  }, 5000);
+}
+
+window.addEventListener('scroll', () => {
+  const currentScrollY = window.scrollY;
+  if (currentScrollY > lastScrollY) {
+    navbar.classList.add('hidden');
+  } else {
+    navbar.classList.add('scrolled');
+    showNavbar();
+  }
+  lastScrollY = currentScrollY;
+});
+
+// Dropdown Logic
+const moreBtn = document.getElementById('moreBtn');
+const dropdown = document.getElementById('dropdown');
+let hideTimer;
+
+moreBtn.addEventListener('mouseenter', () => {
+  clearTimeout(hideTimer);
+  dropdown.classList.add('show');
+});
+moreBtn.addEventListener('mouseleave', () => {
+  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
+});
+dropdown.addEventListener('mouseenter', () => {
+  clearTimeout(hideTimer);
+});
+dropdown.addEventListener('mouseleave', () => {
+  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
+});
+</script>
+
+</body>
+</html>
