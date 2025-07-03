@@ -14,10 +14,12 @@ body {
   margin: 0;
   padding: 20px;
   background: #fff;
+  overflow-x: hidden;
   color: #444;
   line-height: 1.6;
 }
 
+/* Navbar */
 .navbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -25,9 +27,19 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 12px 24px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   z-index: 999;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.navbar.hidden {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.navbar.scrolled {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .navbar .logo {
@@ -37,12 +49,13 @@ body {
   text-decoration: none;
 }
 
-.navbar .menu {
+.menu {
   display: flex;
   gap: 20px;
+  align-items: center;
 }
 
-.navbar .menu a {
+.menu a {
   text-decoration: none;
   color: #000;
   font-size: 14px;
@@ -50,15 +63,69 @@ body {
   transition: transform 0.3s ease, color 0.3s ease;
 }
 
-.navbar .menu a:hover {
+.menu a:hover {
   transform: scale(1.1);
   color: #e60023;
 }
 
+.more-wrapper {
+  position: relative;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 10px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+  z-index: 998;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dropdown.show {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dropdown a {
+  opacity: 0;
+  transform: translateY(10px);
+  color: #000;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-size: 14px;
+  border-radius: 8px;
+  transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+}
+
+.dropdown.show a {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown.show a:nth-child(1) { transition-delay: 0.1s; }
+.dropdown.show a:nth-child(2) { transition-delay: 0.2s; }
+.dropdown.show a:nth-child(3) { transition-delay: 0.3s; }
+
+.dropdown a:hover {
+  color: #e60023;
+  background-color: #f8f8f8;
+  transform: scale(1.05);
+}
+
+/* About Section */
 .about-section {
   max-width: 800px;
-  margin: 100px auto 60px auto;
-  font-family: 'Segoe UI', sans-serif;
+  margin: 120px auto 60px auto;
   padding: 0 16px;
 }
 
@@ -94,73 +161,128 @@ body {
 
 .about-highlight-desc {
   font-size: 14px;
+  color: #444;
+}
+
+@media (max-width: 767px) {
+  .menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<nav class="navbar">
+<nav class="navbar" id="navbar">
   <a href="/" class="logo">Naazeam Art</a>
   <div class="menu">
     <a href="/">Home</a>
-    <a href="/about-us.html">About Us</a>
-    <a href="/portfolio.html">Portfolio</a>
-    <a href="https://wa.me/919096972905" target="_blank">Contact</a>
+    <div class="more-wrapper">
+      <a href="javascript:void(0);" id="moreBtn">More</a>
+      <div class="dropdown" id="dropdown">
+        <a href="/about-us.html">About Us</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="https://wa.me/919096972905" target="_blank">Contact</a>
+      </div>
+    </div>
   </div>
 </nav>
 
 <div class="about-section">
   <h2>About Us</h2>
   <p>
-    We are storytellers at heart — turning ideas into vivid, engaging motion graphics that resonate. With creativity, innovation, and a passion for visual storytelling, Naazeam Motion Arts helps small businesses bring their visions to life with high-impact, memorable videos.
+    We’re more than just creators — we’re storytellers, crafting unforgettable narratives through captivating motion graphics. With a blend of creativity, innovation, and passion, we help brands of all sizes bring their ideas to life with visuals that resonate.
   </p>
 
   <h2>What We Do</h2>
   <p>
-    At <strong>Naazeam Motion Arts</strong>, we craft motion graphics that elevate your brand and strengthen your online presence. From animated explainers to social media campaigns, our tailored services deliver outstanding results, blending quality with affordability.
+    At <strong>Naazeam Art</strong>, we design and deliver stunning motion graphics tailored to your goals. From explainers and social media campaigns to training visuals, our team creates professional, impactful content while keeping it affordable.
   </p>
 
   <h2>Our Vision</h2>
   <p>
-    To empower small businesses by combining creativity and technology — delivering exceptional, budget-friendly motion graphics that redefine storytelling.
+    To empower businesses with creative, accessible, and effective visual storytelling — combining art and technology to inspire audiences.
   </p>
 
   <h2>Our Values</h2>
   <p>
-    We’re committed to delivering visually stunning stories that amplify your brand’s impact, blending artistry, innovation, and value.
+    We value creativity, clarity, and connection — crafting work that doesn’t just look good, but delivers measurable impact for your brand.
   </p>
 
   <ul>
     <li>
       <div class="about-highlight-title">Creative Excellence</div>
       <div class="about-highlight-desc">
-        Our experienced team ensures every animation is crafted to perfection, combining originality with technical expertise.
+        Every animation is a thoughtful blend of art and strategy, crafted by experienced professionals.
       </div>
     </li>
-
     <li>
-      <div class="about-highlight-title">Collaborative Approach</div>
+      <div class="about-highlight-title">Tailored Collaboration</div>
       <div class="about-highlight-desc">
-        We work closely with you to understand your goals, designing solutions that perfectly align with your vision and objectives.
+        We work hand-in-hand with you to create videos that align perfectly with your goals and audience.
       </div>
     </li>
-
     <li>
       <div class="about-highlight-title">Business Impact</div>
       <div class="about-highlight-desc">
-        Our animations don’t just look good — they enhance your credibility, increase engagement, and strengthen your digital presence.
+        Beyond aesthetics, our visuals enhance engagement, trust, and conversions for your business.
       </div>
     </li>
-
     <li>
       <div class="about-highlight-title">Affordable Quality</div>
       <div class="about-highlight-desc">
-        We deliver premium-quality motion graphics at competitive prices, ensuring great value without compromise.
+        We deliver premium-quality animations that are both impactful and budget-friendly.
       </div>
     </li>
   </ul>
 </div>
+
+<script>
+// Dropdown Logic
+const moreBtn = document.getElementById('moreBtn');
+const dropdown = document.getElementById('dropdown');
+let hideTimer;
+
+moreBtn.addEventListener('mouseenter', () => {
+  clearTimeout(hideTimer);
+  dropdown.classList.add('show');
+});
+moreBtn.addEventListener('mouseleave', () => {
+  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
+});
+dropdown.addEventListener('mouseenter', () => {
+  clearTimeout(hideTimer);
+});
+dropdown.addEventListener('mouseleave', () => {
+  hideTimer = setTimeout(() => dropdown.classList.remove('show'), 1000);
+});
+
+// Navbar show/hide on scroll
+const navbar = document.getElementById('navbar');
+let lastScrollY = window.scrollY;
+let timer;
+
+function showNavbar() {
+  navbar.classList.remove('hidden');
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    navbar.classList.add('hidden');
+  }, 5000);
+}
+
+window.addEventListener('scroll', () => {
+  const currentScrollY = window.scrollY;
+  if (currentScrollY > lastScrollY) {
+    navbar.classList.add('hidden');
+  } else {
+    navbar.classList.add('scrolled');
+    showNavbar();
+  }
+  lastScrollY = currentScrollY;
+});
+</script>
 
 </body>
 </html>
