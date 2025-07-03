@@ -157,7 +157,7 @@ body {
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -165,29 +165,50 @@ body {
   }
 }
 
+/* Hero elements - snappier & closer timing */
 .hero-container .brand-heading {
   opacity: 0;
-  animation: fadeSlideUp 0.8s ease-out forwards;
+  animation: fadeSlideUp 0.6s ease-out forwards;
   animation-delay: 0s;
 }
 
 .hero-container .headline {
   opacity: 0;
-  animation: fadeSlideUp 0.8s ease-out forwards;
-  animation-delay: 0.3s;
+  animation: fadeSlideUp 0.6s ease-out forwards;
+  animation-delay: 0.15s;
 }
 
 .hero-container .subheadline {
   opacity: 0;
-  animation: fadeSlideUp 0.8s ease-out forwards;
-  animation-delay: 0.6s;
+  animation: fadeSlideUp 0.6s ease-out forwards;
+  animation-delay: 0.3s;
 }
 
 .hero-container .button-group {
   opacity: 0;
-  animation: fadeSlideUp 0.8s ease-out forwards;
-  animation-delay: 0.9s;
+  animation: fadeSlideUp 0.6s ease-out forwards;
+  animation-delay: 0.45s;
 }
+
+/* Portfolio section */
+.video-preview-box {
+  opacity: 0;
+  animation: fadeSlideUp 0.6s ease-out forwards;
+  animation-delay: 0.6s;
+}
+
+/* Cards section wrapper */
+.service-wrapper .card {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeSlideUp 0.5s ease-out forwards;
+}
+
+.service-wrapper .card:nth-child(1) { animation-delay: 0.8s; }
+.service-wrapper .card:nth-child(2) { animation-delay: 0.9s; }
+.service-wrapper .card:nth-child(3) { animation-delay: 1s; }
+.service-wrapper .card:nth-child(4) { animation-delay: 1.1s; }
+  
 /* Animation End Here */
 
 
