@@ -1,172 +1,286 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Naazeam Art | Strategic Video & Motion Design</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
-/* === YOUR COMPLETE CSS COMBINED === */
-* { box-sizing: border-box; }
-html, body {
-  font-family: 'Outfit', sans-serif;
-  margin: 0; padding: 0;
-  max-width: 100vw;
-  overflow-x: hidden;
-  background-color: #fff;
-}
-.hero-container {
-  max-width: 100%; padding: 40px 16px; margin: 0 auto; text-align: center; animation: fadeIn 1s ease-in;
-}
-.brand-heading { font-size: 28px; font-weight: 700; color: #000; margin-bottom: 8px; animation: slideIn 1s ease-in-out; }
-.headline { font-size: 18px; font-weight: 600; color: #e60023; margin-bottom: 16px; animation: slideIn 1.3s ease-in-out; }
-.subheadline { font-size: 13px; line-height: 1.5; color: #444; max-width: 600px; margin: 0 auto 30px auto; animation: fadeIn 1.8s ease-in-out; }
-.button-group {
-  display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; animation: fadeIn 2.2s ease-in-out;
-}
-.button {
-  padding: 10px 22px; background-color: #e60023; color: white; text-decoration: none; border-radius: 20px;
-  font-weight: 600; font-size: 13px; display: inline-block; transition: transform 0.3s ease, background-color 0.3s ease;
-}
-.button:hover { background-color: #c4001c; transform: scale(1.05); }
-@keyframes fadeIn { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
-@keyframes slideIn { from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);} }
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+  * { box-sizing: border-box; }
 
-.whatsapp-box {
-  max-width: 400px; margin: 40px auto; padding: 20px; border: 1px solid #e60023;
-  border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); background-color: #fff;
-}
-.whatsapp-box h3 { font-size: 17px; color: #e60023; font-weight: 700; margin-bottom: 14px; }
-.whatsapp-input {
-  width: 100%; padding: 10px 14px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 16px; resize: none;
-}
-.whatsapp-button {
-  background-color: #e60023; color: white; font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: 20px;
-  border: none; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease;
-}
-.whatsapp-button:hover { background-color: #c4001c; transform: scale(1.05); }
+  body {
+    font-family: 'Outfit', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #fff;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
 
-.video-preview-box {
-  max-width: 400px; margin: 40px auto; font-family: 'Segoe UI', sans-serif; padding: 20px;
-  border: 1px solid #e60023; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: #fff;
-  overflow: hidden; opacity: 0; transform: translateY(40px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-.video-preview-box.visible { opacity: 1; transform: translateY(0); }
-.video-preview-img {
-  width: 100%; border-radius: 10px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  transition: transform 0.4s ease;
-}
-.video-preview-img:hover { transform: scale(1.03); }
-.video-preview-button {
-  display: inline-block; margin-top: 16px; background-color: #e60023; color: white; text-decoration: none;
-  padding: 10px 22px; font-size: 14px; font-weight: 600; border-radius: 24px; transition: background-color 0.3s ease, transform 0.3s ease;
-}
-.video-preview-button:hover { background-color: #c4001c; transform: scale(1.05); }
+  .hero-whatsapp-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+  }
 
-.card-blog { max-width: 1024px; margin: 40px auto; }
-.card-wrapper {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;
-}
-.card {
-  background-color: white; border-radius: 20px; box-shadow: 0 3px 14px rgba(0,0,0,0.08); padding: 18px 16px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease; transform: scale(1); cursor: pointer;
-}
-.card:hover {
-  transform: scale(1.05); box-shadow: 0 6px 22px rgba(0,0,0,0.12); z-index: 2;
-}
-.card-title { font-size: 16px; font-weight: 700; color: #e60023; margin-bottom: 6px; }
-.card-price { font-size: 13px; font-weight: 600; color: #222; margin-bottom: 10px; }
-.card-body { font-size: 13px; color: #444; line-height: 1.5; }
+  .hero-container {
+    flex: 2 1 70%;
+    padding: 20px;
+    text-align: left;
+    border-radius: 12px;
+  }
+
+  .brand-heading {
+    font-size: 28px;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .headline {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e60023;
+    margin: 8px 0;
+  }
+
+  .subheadline {
+    font-size: 14px;
+    color: #444;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+
+  .button {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 8px 20px;
+    background: #e60023;
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .whatsapp-box {
+    flex: 1 1 30%;
+    max-width: 400px;
+    padding: 20px;
+    border: 1px solid #e60023;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  }
+
+  .whatsapp-box h3 {
+    color: #e60023;
+    font-size: 16px;
+  }
+
+  .whatsapp-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .whatsapp-button {
+    background: #e60023;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+
+  .portfolio-box {
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: center;
+  }
+
+  .video-preview-box {
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #e60023;
+    border-radius: 12px;
+    max-width: 600px;
+    height: 130%;
+  }
+
+  .video-preview-img {
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .video-preview-button {
+    display: inline-block;
+    margin-top: 12px;
+    background: #e60023;
+    color: #fff;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 20px;
+    text-decoration: none;
+  }
+
+  .cards-container {
+    max-width: 1200px;
+    margin: 40px auto;
+  }
+
+  .card-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    padding: 16px;
+    cursor: pointer;
+  }
+
+  .card:hover {
+    transform: scale(1.03);
+  }
+
+  .card-title {
+    color: #e60023;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .card-price {
+    font-size: 12px;
+    color: #333;
+    margin: 4px 0;
+  }
+
+  .card-body {
+    font-size: 12px;
+    color: #555;
+  }
 </style>
 
-</head>
-
-<body>
-
-<div class="hero-container">
-  <div class="brand-heading">Naazeam Art</div>
-  <div class="headline">Crafting Motion, Creating Impact</div>
-  <div class="subheadline">
-    We transform ideas into visually stunning motion graphics that captivate, communicate, and convert. From animated explainers to branded character videos, we help businesses connect through clear, creative storytelling.
-  </div>
-  <div class="button-group">
+<div class="hero-whatsapp-container">
+  <div class="hero-container">
+    <div class="brand-heading">Naazeam Art</div>
+    <div class="headline">Crafting Motion, Creating Impact</div>
+    <div class="subheadline">
+      We transform ideas into stunning motion graphics that captivate and convert. From animated explainers to branded characters, we help businesses connect through creative storytelling.
+    </div>
     <a href="https://www.naazeam.art/about-us" class="button" target="_blank">About Us</a>
   </div>
+
+  <div class="whatsapp-box">
+    <h3>Send us a quick message on WhatsApp</h3>
+    <textarea id="wa-message" class="whatsapp-input" rows="4" placeholder="Type your message here..."></textarea>
+    <button class="whatsapp-button" onclick="sendWhatsApp()">Send via WhatsApp</button>
+  </div>
 </div>
 
-<div class="whatsapp-box">
-  <h3>Send us a quick message on WhatsApp</h3>
-  <textarea id="wa-message" class="whatsapp-input" rows="4" placeholder="Type your message here..."></textarea>
-  <br>
-  <button class="whatsapp-button" onclick="sendWhatsApp()">Send via WhatsApp</button>
+<div class="portfolio-box">
+  <div class="video-preview-box">
+    <a href="https://www.naazeam.art/portfolio" target="_blank">
+      <img class="video-preview-img" src="https://img.youtube.com/vi/rflC-aEzxCc/hqdefault.jpg" alt="Portfolio Preview">
+    </a>
+    <a class="video-preview-button" href="https://www.naazeam.art/portfolio" target="_blank">View Portfolio</a>
+  </div>
 </div>
 
-<div class="video-preview-box">
-  <a href="https://www.naazeam.art/portfolio" target="_blank">
-    <img class="video-preview-img" src="https://img.youtube.com/vi/rflC-aEzxCc/hqdefault.jpg" alt="Video Preview">
-  </a>
-  <a class="video-preview-button" href="https://www.naazeam.art/portfolio" target="_blank">View Portfolio</a>
-</div>
-
-<div class="card-blog">
+<div class="cards-container">
   <div class="card-wrapper">
-    <!-- blog 1 cards -->
+    <!-- Add all 12 cards here -->
+    <!-- Example card: -->
     <div class="card" onclick="sendToWhatsApp('Animated Explainer Videos', 'I want to explain my product or concept using engaging animation.')">
-      <div class="card-title">Animated Explainer Videos</div>
-      <div class="card-price">From ₹7000/min</div>
-      <div class="card-body">Simplify complex ideas through fun and engaging motion design that connects with your audience.</div>
-    </div>
-    <div class="card" onclick="sendToWhatsApp('Social Media Ad Campaigns', 'I want bold, eye-catching videos for social media.')">
-      <div class="card-title">Social Media Ad Campaigns</div>
-      <div class="card-price">From ₹5000/min</div>
-      <div class="card-body">Grab attention on Instagram, YouTube, or reels with powerful visuals tailored to your brand.</div>
-    </div>
-    <div class="card" onclick="sendToWhatsApp('Character Design & Animation', 'I need unique animated characters for my brand.')">
-      <div class="card-title">Character Design & Animation</div>
-      <div class="card-price">From ₹12000/min</div>
-      <div class="card-body">Tell your story with original characters crafted for emotional and memorable impact.</div>
-    </div>
-    <div class="card" onclick="sendToWhatsApp('Logo Animation', 'I want to animate my logo for intros/outros.')">
-      <div class="card-title">Logo Animation</div>
-      <div class="card-price">From ₹5000/min</div>
-      <div class="card-body">Transform static logos into stunning, animated openers or end screens for your videos.</div>
-    </div>
+  <div class="card-title">Animated Explainer Videos</div>
+  <div class="card-price">From ₹7000/min</div>
+  <div class="card-body">Simplify complex ideas with fun and engaging motion design that connects with your audience.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Social Media Ad Campaigns', 'I want bold, eye-catching videos for social media.')">
+  <div class="card-title">Social Media Ad Campaigns</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Grab attention on Instagram, YouTube, or reels with powerful visuals tailored to your brand.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Character Design & Animation', 'I need unique animated characters for my brand.')">
+  <div class="card-title">Character Design & Animation</div>
+  <div class="card-price">From ₹12000/min</div>
+  <div class="card-body">Tell your story with original characters crafted for emotional and memorable impact.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Logo Animation', 'I want to animate my logo for intros/outros.')">
+  <div class="card-title">Logo Animation</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Transform static logos into stunning, animated openers or end screens for your videos.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Kinetic Typography Videos', 'I want to animate bold text for my brand.')">
+  <div class="card-title">Kinetic Typography Videos</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Turn text into motion to deliver bold messages that speak loud and clear.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Motion Graphics for Presentations', 'I want my slides and data to be more engaging.')">
+  <div class="card-title">Presentation Motion Design</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Upgrade your pitch decks with visuals that captivate your audience.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Animated Infographics', 'I want to visually represent data or stats.')">
+  <div class="card-title">Animated Infographics</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Make data beautiful. Tell visual stories from boring numbers.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Product Demonstrations', 'I want to showcase my product features visually.')">
+  <div class="card-title">Product Demonstrations</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Show how your product works and solves real-world problems in style.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Video Editing & Post-Production', 'I want to edit and polish my video footage.')">
+  <div class="card-title">Video Editing Services</div>
+  <div class="card-price">From ₹3000/min</div>
+  <div class="card-body">From raw clips to final cut — we deliver clean, professional video edits that shine.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Event Visuals', 'I want stunning visuals for my event or show.')">
+  <div class="card-title">Event Visuals</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Make your live events memorable with immersive stage visuals and animations.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Demo Animation', 'I want a visual walkthrough for my product or service.')">
+  <div class="card-title">Demo Animation</div>
+  <div class="card-price">From ₹5000/min</div>
+  <div class="card-body">Create trust and clarity with animated demos your customers will understand.</div>
+</div>
+
+<div class="card" onclick="sendToWhatsApp('Custom GIFs & Short Animations', 'I want quick GIFs for branding and promotion.')">
+  <div class="card-title">Custom GIFs & Short Animations</div>
+  <div class="card-price">From ₹12000/min</div>
+  <div class="card-body">Engage your audience with quirky, branded GIFs and quick looping visuals.</div>
+</div>
+    
+    <!-- Duplicate above for all 12 cards -->
   </div>
 </div>
 
 <script>
-function sendWhatsApp() {
-  const message = document.getElementById("wa-message").value.trim();
-  if (message) {
-    const encoded = encodeURIComponent(message);
-    const phone = "919096972905";
-    const link = `https://wa.me/${phone}?text=${encoded}`;
-    window.open(link, '_blank');
-  } else {
-    alert("Please type your message before sending.");
-  }
-}
-
-function sendToWhatsApp(service, details) {
-  const phone = "919096972905";
-  const text = `Hi! I'm interested in your service: ${service}. ${details} Can we discuss this further?`;
-  const link = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-  window.open(link, '_blank');
-}
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      observer.unobserve(entry.target);
+  function sendWhatsApp() {
+    const message = document.getElementById("wa-message").value.trim();
+    if (message) {
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/919096972905?text=${encoded}`, '_blank');
+    } else {
+      alert("Please type your message before sending.");
     }
-  });
-});
-const previewBox = document.querySelector('.video-preview-box');
-observer.observe(previewBox);
-</script>
+  }
 
-</body>
-</html>
+  function sendToWhatsApp(service, details) {
+    const text = `Hi! I'm interested in your service: ${service}. ${details}`;
+    window.open(`https://wa.me/919096972905?text=${encodeURIComponent(text)}`, '_blank');
+  }
+</script>
