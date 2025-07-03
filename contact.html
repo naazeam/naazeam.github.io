@@ -268,15 +268,31 @@ bookBtn.onclick = ()=>{
 };
 
 /* ---------- modal OK ---------- */
-okBtn.onclick = ()=>{
-  modal.style.display='none';
+okBtn.addEventListener('click', () => {
+  modal.style.display = 'none';
 
-  /* push to Formspree */
+  /* ------------- 1) send Formspree email ------------- */
   document.getElementById('fallbackMessage').value = messageEl.value.trim();
   document.getElementById('fallbackDate').value    = selectedDate;
   document.getElementById('fallbackSlot').value    = selectedSlot;
   document.getElementById('fallbackForm').submit();
-};
+
+  /* ------------- 2) open Google-Calendar tab ------------- */
+  // selectedDate = "YYYY-MM-DD",  selectedSlot = "HH:00 IST"
+  const startLocal = new Date(`${selectedDate}T${selectedSlot.slice(0,2).padStart(2,'0')}:00:00+05:30`);
+  const endLocal   = new Date(startLocal.getTime() + 30*60*1000);   // 30-min meeting
+
+  const iso = d => d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const gcalURL =
+    `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+    `&text=${encodeURIComponent('Call with Naazeam Art')}` +
+    `&dates=${iso(startLocal)}/${iso(endLocal)}` +
+    `&details=${encodeURIComponent(messageEl.value)}` +
+    `&sf=true&output=xml`;
+
+  window.open(gcalURL, '_blank');
+});
+
 
 /* ---------- navbar hide/show ---------- */
 let lastY = window.scrollY, hideT;
