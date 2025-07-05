@@ -4,127 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Video Comparison</title>
-    <style>
-        /* Basic Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    /* Basic Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Poppins', sans-serif; /* Clean font */
-            background-color: #f5f5f5;
-            color: #333;
-            text-align: left;
-            padding: 40px;
-        }
+    body {
+        font-family: 'Poppins', sans-serif; /* Clean font */
+        background-color: #f5f5f5;
+        color: #333;
+        text-align: left;
+        padding: 40px;
+        font-size: 1.3em; /* Increased by 30% from 1em */
+    }
 
-        header {
-            margin-bottom: 30px;
-        }
+    header {
+        margin-bottom: 30px;
+    }
 
-        h1 {
-            font-size: 3em;
-            color: #2c3e50;
-            font-weight: 700;
-        }
+    h1 {
+        font-size: 1.95em; /* Increased by 30% from 1.5em */
+        color: #2c3e50;
+        font-weight: 700;
+    }
 
-        p {
-            font-size: 1.2em;
-            color: #7f8c8d;
-        }
+    p {
+        font-size: 0.78em; /* Increased by 30% from 0.6em */
+        color: #7f8c8d;
+    }
 
-        .prompt {
-            font-size: 1.1em;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
+    .prompt {
+        font-size: 0.72em; /* Increased by 30% from 0.55em */
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
 
-        /* Comparison Box Styling */
+    /* Comparison Box Styling */
+    .comparison-box {
+        display: inline-block;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        width: 46%; /* Make the boxes take up 48% of the row */
+        height: auto;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        text-align: left;
+        vertical-align: top;
+        transition: all 0.3s ease;
+    }
+
+    .comparison-box:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Video Container to Maintain 16:9 Ratio */
+    .video-container {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        margin-bottom: 20px;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Ensures the entire video scales down to fit the container */
+    }
+
+    h3 {
+        font-size: 0.91em; /* Increased by 30% from 0.7em */
+        font-weight: 600;
+        color: #34495e;
+        margin-bottom: 10px;
+    }
+
+    h4 {
+        font-size: 0.72em; /* Increased by 30% from 0.55em */
+        font-weight: 500;
+        color: #7f8c8d;
+        margin-top: 10px;
+    }
+
+    p.analysis {
+        font-size: 0.65em; /* Increased by 30% from 0.5em */
+        color: #7f8c8d;
+        margin: 10px 0 20px 0;
+        line-height: 1.5;
+    }
+
+    footer {
+        margin-top: 50px;
+        font-size: 0.65em; /* Increased by 30% from 0.5em */
+        color: #7f8c8d;
+        text-align: center;
+    }
+
+    /* Layout for Desktop and Mobile */
+    @media (max-width: 768px) {
+        /* On mobile, the boxes will stack vertically */
         .comparison-box {
-            display: inline-block;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 15px;
-            width: 48%; /* Make the boxes take up 48% of the row */
-            height: auto;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-            text-align: left;
-            vertical-align: top;
-            transition: all 0.3s ease;
+            width: 90%; /* Full width on mobile */
+            margin-bottom: 20px; /* Add space between stacked boxes */
         }
 
-        .comparison-box:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        .comparison-box:last-child {
+            margin-right: 0; /* Remove margin for the last item */
         }
 
-        .video-container {
-            border-radius: 15px;
-            overflow: hidden;
-            width: 100%;
-            height: 400px;
-            margin-bottom: 20px;
+        /* Smaller font for mobile */
+        h1 {
+            font-size: 1.3em; /* Increased by 30% from 1em */
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Ensure video covers the entire container */
+        p, .prompt, h3, h4 {
+            font-size: 0.65em; /* Increased by 30% from 0.5em */
         }
+    }
+</style>
 
-        h3 {
-            font-size: 1.4em;
-            font-weight: 600;
-            color: #34495e;
-            margin-bottom: 10px;
-        }
 
-        h4 {
-            font-size: 1.1em;
-            font-weight: 500;
-            color: #7f8c8d;
-            margin-top: 10px;
-        }
-
-        p.analysis {
-            font-size: 1em;
-            color: #7f8c8d;
-            margin: 10px 0 20px 0;
-            line-height: 1.5;
-        }
-
-        footer {
-            margin-top: 50px;
-            font-size: 1em;
-            color: #7f8c8d;
-            text-align: center;
-        }
-
-        /* Layout for Desktop and Mobile */
-        @media (max-width: 768px) {
-            /* On mobile, the boxes will stack vertically */
-            .comparison-box {
-                width: 90%; /* Full width on mobile */
-                margin-bottom: 20px; /* Add space between stacked boxes */
-            }
-
-            .comparison-box:last-child {
-                margin-right: 0; /* Remove margin for the last item */
-            }
-
-            /* Smaller font for mobile */
-            h1 {
-                font-size: 2em;
-            }
-
-            p, .prompt, h3, h4 {
-                font-size: 1em;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -166,7 +175,7 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
 
 <!-- Box 1 end  -->
 
-
+<br><br>
 <!-- Box 2 -->
 <h2>Scene 2: The Office Gravity Scene</h2>
 <p class="prompt">
@@ -199,6 +208,7 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
     <p class="analysis">Kling, unfortunately, doesn't follow the prompt well. The gravity aspect is missing, and the scene feels more like a hallucination rather than a zero-gravity environment. There are significant discrepancies in the visual interpretation of the office setup, making it a less accurate reflection of the original prompt.</p>
 </div>
 <!-- Box 2 end -->
+<br><br>
 <!-- Box 3 -->
 <h2>Scene 3: The Zero-Gravity Greenhouse</h2>
 <p class="prompt">
@@ -231,6 +241,8 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
     <p class="analysis">Kling does a fantastic job with the scene overall, but there are issues with prompt adherence and some visual breaks in the footage. While the overall aesthetic is good, the beginning of the scene suffers from some disruption in the visual consistency, affecting the portrayal of the environment.</p>
 </div>
 <!-- Box 3 end -->
+
+<br><br>
 
 <!-- Box 4 -->
 <h2>Scene 4: The Bhutan Streets at 4 PM</h2>
@@ -265,6 +277,8 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
 </div>
 <!-- Box 4 end -->
 
+<br><br>
+
 <!-- Box 5 -->
 <h2>Scene 5: The Thimphu Marketplace at 4 PM</h2>
 <p class="prompt">
@@ -297,6 +311,8 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
     <p class="analysis">Kling did a decent job, but the scene feels more like stock footage with a handheld camera effect. While it captures the scene, it doesn't do so with the same cinematic quality as Hailuo. The camera movement and composition lack the smooth, steady feel that would align more with the prompt’s intended atmosphere.</p>
 </div>
 <!-- Box 5 end -->
+
+<br><br>
 
 <!-- Box 6 -->
 <h2>Scene 6: The Kailasa Mandir Construction Site in 200 BC India</h2>
@@ -331,6 +347,8 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
 </div>
 <!-- Box 6 end -->
 
+<br><br>
+
 <!-- Box 7 -->
 <h2>Scene 7: The Surreal Chase in the European City</h2>
 <p class="prompt">
@@ -363,6 +381,8 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
     <p class="analysis">Kling follows the prompt better, delivering a more realistic action scene. The furry cat looks fantastic, but the footage is over-saturated, which detracts from the overall visual quality and makes the scene feel slightly exaggerated.</p>
 </div>
 <!-- Box 7 end -->
+
+<br><br>
 
 <!-- Box 8 -->
 <h2>Scene 8: The Royal Palace Farewell</h2>
@@ -397,6 +417,8 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
 </div>
 <!-- Box 8 end -->
 
+<br><br>
+
 <!-- Box 9 -->
 <h2>Scene 9: Ravana and Sita in the Pushpaka Vimana</h2>
 <p class="prompt">
@@ -430,6 +452,9 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
 </div>
 <!-- Box 9 end -->
 
+<br><br>
+
+
 <!-- Box 10 -->
 <h2>Scene 10: The Sacred Courtyard Farewell</h2>
 <p class="prompt">
@@ -462,6 +487,8 @@ The camera begins with an overhead shot of a mysterious forest clearing, with a 
     <p class="analysis">Kling loses the cultural details and authenticity once again. The scene doesn't accurately represent the intended Indian culture and the visuals fall short in reflecting the gravity of the farewell ritual.</p>
 </div>
 <!-- Box 10 end -->
+
+<br><br>
 
 
 <footer>
