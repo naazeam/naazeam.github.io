@@ -17,8 +17,9 @@
         background-color: #f5f5f5;
         color: #333;
         text-align: left;
-        padding: 10px;
+        padding: 20px;
         font-size: 1.3em; /* Increased by 30% from 1em */
+        overflow-x: hidden; /* Prevent horizontal overflow */
     }
 
     header {
@@ -51,10 +52,11 @@
         width: 48%; /* Make the boxes take up 48% of the row */
         height: auto;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        margin: 5px;
+        margin: 10px 5px; /* Reduced margin to prevent overflow */
         text-align: left;
         vertical-align: top;
         transition: all 0.3s ease;
+        box-sizing: border-box; /* Ensure padding doesn't cause overflow */
     }
 
     .comparison-box:hover {
@@ -132,6 +134,7 @@
         }
     }
 </style>
+
 
 
 </head>
