@@ -388,7 +388,7 @@
         const historyLimit = 20;
         const customProperties = ['customType', 'originalSrc', 'cornerRadiusPercent', 'isGuideline'];
         const googleFonts = ["Roboto", "Lobster", "Pacifico", "Bangers", "Press Start 2P", "Oswald", "Lato", "Montserrat", "Raleway", "Poppins", "Nunito", "Merriweather", "Playfair Display", "Dancing Script", "Indie Flower", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Caveat"];
-        const emojis = ['😀', '😂', '😍', '😎', '�', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '🍔', '🌮', '�', '🥑', '🍓', '❤️', '?', '⭐', '🚀', '💻', '🎸'];
+        const emojis = ['😀', '😂', '😍', '😎', '🤔', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '�', '🌮', '🎂', '🥑', '🍓', '❤️', '💯', '⭐', '🚀', '💻', '🎸'];
 
         // --- Element Selectors ---
         const canvasEl = document.getElementById('c');
@@ -421,7 +421,14 @@
                 });
                 canvas.setDimensions({ width, height });
             } else {
-                canvas = new fabric.Canvas('c', { width, height });
+                // *** FIX APPLIED HERE ***
+                // preserveObjectStacking ensures that the selected object doesn't
+                // visually jump to the top of the canvas, respecting its true z-index.
+                canvas = new fabric.Canvas('c', { 
+                    width, 
+                    height,
+                    preserveObjectStacking: true 
+                });
 
                 // --- Customize Fabric.js Controls ---
                 fabric.Object.prototype.transparentCorners = false;
@@ -454,7 +461,6 @@
                     cornerSize: 24
                 });
 
-                // NEW: Add Edit Control
                 const editIconSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'%3E%3C/path%3E%3Cpath d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'%3E%3C/path%3E%3C/svg%3E";
                 const editIconImg = new Image();
                 editIconImg.src = editIconSvg;
@@ -502,7 +508,15 @@
                     'selection:updated': handleSelectionChange,
                     'selection:cleared': handleSelectionChange,
                     'object:moving': handleSnapping,
-                    // Double click is now removed, replaced by the edit button
+                    'object:rotating': (e) => {
+                        const obj = e.target;
+                        const snapAngle = 45;
+                        const snapThreshold = 15;
+                        const newAngle = Math.round(obj.angle / snapAngle) * snapAngle;
+                        if (Math.abs(obj.angle - newAngle) < snapThreshold) {
+                            obj.set('angle', newAngle).setCoords();
+                        }
+                    },
                     'text:changed': (e) => {
                         const obj = e.target;
                         if (!obj || obj.get('customType') !== 'text') return;
@@ -634,7 +648,6 @@
             bottomToolbar.classList.remove('hidden');
 
             if (activeObject) {
-                 // NEW: Show/hide edit control based on object type
                 const isEditable = activeObject.customType === 'text' || activeObject.customType === 'image';
                 activeObject.controls.edit.visible = isEditable;
 
@@ -748,11 +761,15 @@
             canvas.discardActiveObject().renderAll();
         });
         
+        // *** FIX APPLIED HERE ***
+        // Simplified layer controls. `preserveObjectStacking` handles the visual update,
+        // so we just need to call the layering method and re-render.
         bringForwardBtn.addEventListener('click', () => {
             const activeObject = canvas.getActiveObject();
             if (activeObject) {
                 canvas.bringForward(activeObject);
                 canvas.renderAll();
+                saveState();
             }
         });
 
@@ -760,12 +777,14 @@
             const activeObject = canvas.getActiveObject();
             if (activeObject) {
                 canvas.sendBackwards(activeObject);
+                // Ensure it doesn't go behind guidelines
                 canvas.getObjects().forEach(obj => {
                     if (obj.isGuideline) {
                         canvas.sendToBack(obj);
                     }
                 });
                 canvas.renderAll();
+                saveState();
             }
         });
         
