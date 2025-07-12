@@ -119,7 +119,7 @@
         #color-presets {
             position: absolute;
             right: 1rem;
-            bottom: 1rem;
+            top: 50%;
             background-color: rgba(255, 255, 255, 0.9);
             padding: 0.5rem;
             border-radius: 0.75rem;
@@ -128,19 +128,19 @@
             flex-direction: column;
             gap: 0.5rem;
             z-index: 10;
-            transform: scale(0.85);
-            transform-origin: bottom right;
+            transform: translateY(-50%) scale(0.85);
+            transform-origin: right center;
         }
         #layer-controls {
-            position: absolute;
-            bottom: 1rem;
-            left: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            transform: scale(0.85);
-            transform-origin: bottom left;
-            z-index: 10;
+           position: absolute;
+           top: 50%;
+           left: 1rem;
+           display: flex;
+           flex-direction: column;
+           gap: 0.5rem;
+           transform: translateY(-50%) scale(0.85);
+           transform-origin: left center;
+           z-index: 10;
         }
 
         /* Bottom toolbar for adding elements */
@@ -235,6 +235,15 @@
         <!-- T-Shirt and Canvas Area -->
         <div id="tshirt-wrapper">
             <img src="https://naazeam.github.io/white1.png" alt="T-shirt" id="tshirt-image">
+            
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" class="hidden absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg z-10">
+                <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+
             <canvas id="c"></canvas>
 
             <!-- Controls are now positioned relative to this wrapper -->
@@ -301,16 +310,12 @@
     <div id="contextual-controls" class="hidden">
         <!-- Text Controls -->
         <div id="text-controls" class="hidden contextual-panel">
-            <div class="flex items-center gap-2 mb-4">
+            <div class="flex items-center gap-2 mb-2">
                 <button id="font-family-btn" class="control-btn flex-grow p-2">Select Font</button>
                 <div class="relative w-12 h-10">
                     <input type="color" id="text-color" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
                     <div id="text-color-display" class="w-full h-full rounded-md border border-gray-300" style="background-color: #000000;"></div>
                 </div>
-            </div>
-            <div class="flex items-center gap-2 mb-4">
-                <label for="font-size" class="text-sm text-gray-600">Size:</label>
-                <input type="range" id="font-size" min="10" max="200" value="40" class="w-full">
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div class="flex items-center gap-1 rounded-md bg-gray-100 p-1">
@@ -380,17 +385,16 @@
         let history = [];
         let historyIndex = -1;
         let historyLock = false;
-        let touchStartPos = null; // For tap detection
-        let touchStartTime = 0;   // For tap detection
         const historyLimit = 20;
-        const customProperties = ['customType', 'originalSrc', 'cornerRadiusPercent', 'centeredScaling', 'isGuideline'];
+        const customProperties = ['customType', 'originalSrc', 'cornerRadiusPercent', 'isGuideline'];
         const googleFonts = ["Roboto", "Lobster", "Pacifico", "Bangers", "Press Start 2P", "Oswald", "Lato", "Montserrat", "Raleway", "Poppins", "Nunito", "Merriweather", "Playfair Display", "Dancing Script", "Indie Flower", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Caveat"];
-        const emojis = ['😀', '😂', '😍', '😎', '🤔', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '🍔', '🌮', '�', '🥑', '🍓', '❤️', '🔥', '⭐', '🚀', '💻', '🎸'];
+        const emojis = ['😀', '😂', '😍', '😎', '�', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '🍔', '🌮', '�', '🥑', '🍓', '❤️', '?', '⭐', '🚀', '💻', '🎸'];
 
         // --- Element Selectors ---
         const canvasEl = document.getElementById('c');
         const tshirtWrapper = document.getElementById('tshirt-wrapper');
         const tshirtImage = document.getElementById('tshirt-image');
+        const loadingSpinner = document.getElementById('loading-spinner');
         const undoBtn = document.getElementById('undo-btn');
         const redoBtn = document.getElementById('redo-btn');
         const removeBtn = document.getElementById('remove-btn');
@@ -410,7 +414,6 @@
             const { width, height } = tshirtWrapper.getBoundingClientRect();
             
             if (canvas) {
-                // Remove old guidelines before resizing
                 canvas.getObjects().forEach(obj => {
                     if (obj.isGuideline) {
                         canvas.remove(obj);
@@ -419,6 +422,38 @@
                 canvas.setDimensions({ width, height });
             } else {
                 canvas = new fabric.Canvas('c', { width, height });
+
+                // --- Customize Fabric.js Controls ---
+                fabric.Object.prototype.transparentCorners = false;
+                fabric.Object.prototype.cornerColor = '#4f46e5';
+                fabric.Object.prototype.cornerStyle = 'circle';
+                fabric.Object.prototype.borderColor = '#4f46e5';
+                fabric.Object.prototype.borderScaleFactor = 2;
+                fabric.Object.prototype.centeredScaling = true;
+                fabric.Object.prototype.lockUniScaling = true;
+
+                fabric.Object.prototype.setControlsVisibility({
+                    mt: false, mb: false, ml: false, mr: false,
+                });
+
+                const rotationIconSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-rotate-cw'%3E%3Cpolyline points='23 4 23 10 17 10'%3E%3C/polyline%3E%3Cpath d='M20.49 15a9 9 0 1 1-2.12-9.36L23 10'%3E%3C/path%3E%3C/svg%3E";
+                const rotationIconImg = new Image();
+                rotationIconImg.src = rotationIconSvg;
+
+                fabric.Object.prototype.controls.mtr = new fabric.Control({
+                    x: 0, y: -0.5, offsetY: -40, cursorStyle: 'crosshair',
+                    actionHandler: fabric.controlsUtils.rotationWithSnapping,
+                    actionName: 'rotate',
+                    render: function(ctx, left, top, styleOverride, fabricObject) {
+                        ctx.save();
+                        ctx.translate(left, top);
+                        ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+                        ctx.drawImage(rotationIconImg, -12, -12, 24, 24);
+                        ctx.restore();
+                    },
+                    cornerSize: 24
+                });
+
                 canvas.on({
                     'object:added': saveState,
                     'object:removed': saveState,
@@ -427,28 +462,42 @@
                     'selection:updated': handleSelectionChange,
                     'selection:cleared': handleSelectionChange,
                     'object:moving': handleSnapping,
-                    // --- REVERTED: Double-click for editing ---
                     'mouse:dblclick': (options) => {
                         const target = options.target;
                         if (target) {
-                            // For text, enter editing mode on double-click
                             if (target.customType === 'text' || target.type === 'i-text') {
                                 target.enterEditing();
                                 target.selectionStart = target.text.length;
                                 target.selectionEnd = target.text.length;
                                 canvas.renderAll();
                             } 
-                            // For images, open the cropper on double-click
                             else if (target.customType === 'image') {
                                 editingObject = target;
                                 openCropper(editingObject.originalSrc, editingObject.cornerRadiusPercent);
                             }
                         }
                     },
+                    // NEW: Auto-resize text while typing
+                    'text:changed': (e) => {
+                        const obj = e.target;
+                        if (!obj || obj.get('customType') !== 'text') return;
+
+                        const maxWidth = canvas.width - 40; // 20px margin on each side
+                        const currentWidth = obj.getScaledWidth();
+
+                        if (currentWidth > maxWidth) {
+                            const newScale = maxWidth / obj.width;
+                            obj.set({
+                                scaleX: newScale,
+                                scaleY: newScale
+                            });
+                            obj.setCoords();
+                            canvas.requestRenderAll();
+                        }
+                    }
                 });
             }
 
-            // Add new guidelines
             const guidelineProps = { stroke: '#e0e0e0', strokeDashArray: [5, 5], selectable: false, evented: false, excludeFromExport: true, isGuideline: true };
             const centerLineV = new fabric.Line([width / 2, 0, width / 2, height], guidelineProps);
             const centerLineH = new fabric.Line([0, height / 2, width, height / 2], guidelineProps);
@@ -457,7 +506,7 @@
             canvas.sendToBack(centerLineH);
 
             canvas.renderAll();
-            if (!history.length) saveState(); // Initial state
+            if (!history.length) saveState();
         }
         initializeCanvas();
         new ResizeObserver(initializeCanvas).observe(tshirtWrapper);
@@ -469,7 +518,6 @@
         }
 
         function saveState(e) {
-            // Don't save state for guideline modifications
             if (e && e.target && e.target.isGuideline) return;
             if (historyLock) return;
             history = history.slice(0, historyIndex + 1);
@@ -486,11 +534,10 @@
             historyLock = true;
             canvas.loadFromJSON(history[index], () => {
                 historyLock = false;
-                // Re-initialize guidelines after loading state
                 initializeCanvas();
                 canvas.renderAll();
                 updateUndoRedoButtons();
-                handleSelectionChange(); // Update controls based on reloaded state
+                handleSelectionChange();
             });
         }
         undoBtn.addEventListener('click', () => historyIndex > 0 && replayState(--historyIndex));
@@ -505,12 +552,28 @@
             '#3b82f6': 'https://naazeam.github.io/blue1.png',
             '#22c55e': 'https://naazeam.github.io/green1.png'
         };
+
+        function preloadImages() {
+            Object.values(colorToImageMap).forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+
         colorPresets.addEventListener('click', (e) => {
             const btn = e.target.closest('button');
             if (!btn) return;
             const color = btn.dataset.color;
             if (color && colorToImageMap[color]) {
+                loadingSpinner.classList.remove('hidden');
                 tshirtImage.src = colorToImageMap[color];
+                tshirtImage.onload = () => {
+                    loadingSpinner.classList.add('hidden');
+                    tshirtImage.onload = null;
+                };
+                if (tshirtImage.complete) {
+                    tshirtImage.onload();
+                }
                 document.querySelectorAll('#color-presets button').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
@@ -523,7 +586,7 @@
              const text = new fabric.IText('Hello', {
                 left: canvas.width / 2, top: canvas.height / 2, fontFamily: 'Roboto', fontSize: 50,
                 fill: '#000000', originX: 'center', originY: 'center', textAlign: 'center',
-                centeredScaling: true, customType: 'text'
+                customType: 'text'
             });
             canvas.add(text).setActiveObject(text);
         });
@@ -546,7 +609,6 @@
             bottomToolbar.classList.remove('hidden');
 
             if (activeObject && activeObject.isEditing) {
-                 // If an object is in editing mode, keep its controls visible
                  bottomToolbar.classList.add('hidden');
                  contextualControls.classList.remove('hidden');
                  if (activeObject.customType === 'text') {
@@ -573,7 +635,6 @@
         function updateTextControls(obj) {
             document.getElementById('text-color').value = obj.get('fill');
             document.getElementById('text-color-display').style.backgroundColor = obj.get('fill');
-            document.getElementById('font-size').value = obj.get('fontSize');
             document.getElementById('bold-btn').classList.toggle('active', obj.get('fontWeight') === 'bold');
             document.getElementById('italic-btn').classList.toggle('active', obj.get('fontStyle') === 'italic');
             document.getElementById('underline-btn').classList.toggle('active', obj.get('underline'));
@@ -590,13 +651,7 @@
                 canvas.renderAll();
             }
         });
-        document.getElementById('font-size').addEventListener('input', (e) => {
-            const activeObject = canvas.getActiveObject();
-            if (activeObject?.customType === 'text') {
-                activeObject.set('fontSize', parseInt(e.target.value, 10));
-                canvas.renderAll();
-            }
-        });
+
         document.getElementById('bold-btn').addEventListener('click', (e) => {
             const activeObject = canvas.getActiveObject();
             if (activeObject?.customType === 'text') {
@@ -674,7 +729,6 @@
             const activeObject = canvas.getActiveObject();
             if (activeObject) {
                 canvas.sendBackwards(activeObject);
-                // Ensure it doesn't go behind guidelines
                 canvas.getObjects().forEach(obj => {
                     if (obj.isGuideline) {
                         canvas.sendToBack(obj);
@@ -692,12 +746,10 @@
             const canvasCenterY = canvas.getCenter().top;
             const objCenter = obj.getCenterPoint();
 
-            // Snap to horizontal center
             if (Math.abs(objCenter.x - canvasCenterX) < snappingThreshold) {
                 obj.set({ left: canvasCenterX }).setCoords();
             }
 
-            // Snap to vertical center
             if (Math.abs(objCenter.y - canvasCenterY) < snappingThreshold) {
                 obj.set({ top: canvasCenterY }).setCoords();
             }
@@ -754,7 +806,7 @@
                 btn.addEventListener('click', () => {
                     const emoji = new fabric.IText(emojiChar, {
                         left: canvas.width / 2, top: canvas.height / 2, fontSize: 80,
-                        originX: 'center', originY: 'center', centeredScaling: true, customType: 'text'
+                        originX: 'center', originY: 'center', customType: 'text'
                     });
                     canvas.add(emoji).setActiveObject(emoji);
                     closeModal();
@@ -789,7 +841,7 @@
         function addFrame(type) {
             const commonProps = {
                 left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center',
-                fill: 'transparent', stroke: '#000000', strokeWidth: 5, customType: 'frame', centeredScaling: true
+                fill: 'transparent', stroke: '#000000', strokeWidth: 5, customType: 'frame'
             };
             if (type === 'rounded' || type === 'square') {
                 const frame = new fabric.Rect({ ...commonProps, width: 250, height: 250, rx: type === 'rounded' ? 30 : 0, ry: type === 'rounded' ? 30 : 0 });
@@ -875,12 +927,15 @@
                     top: editingObject ? editingObject.top : canvas.height / 2,
                     angle: editingObject ? editingObject.angle : 0,
                     originX: 'center', originY: 'center', customType: 'image',
-                    centeredScaling: true, originalSrc: imageToCrop.src, cornerRadiusPercent: radiusPercent
+                    originalSrc: imageToCrop.src, cornerRadiusPercent: radiusPercent
                 });
                 canvas.add(img).setActiveObject(img);
             });
             closeCropper();
         });
+
+        // Preload images on initial load
+        preloadImages();
     });
     </script>
 
