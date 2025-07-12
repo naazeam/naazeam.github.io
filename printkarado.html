@@ -454,6 +454,46 @@
                     cornerSize: 24
                 });
 
+                // NEW: Add Edit Control
+                const editIconSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'%3E%3C/path%3E%3Cpath d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'%3E%3C/path%3E%3C/svg%3E";
+                const editIconImg = new Image();
+                editIconImg.src = editIconSvg;
+
+                function editActionHandler(eventData, transform, x, y) {
+                    const target = transform.target;
+                    if (target.customType === 'text' || target.type === 'i-text') {
+                        canvas.setActiveObject(target);
+                        target.enterEditing();
+                        target.selectionStart = target.text.length;
+                        target.selectionEnd = target.text.length;
+                    } else if (target.customType === 'image') {
+                        editingObject = target;
+                        openCropper(editingObject.originalSrc, editingObject.cornerRadiusPercent);
+                    }
+                    return true;
+                }
+
+                function renderEditIcon(ctx, left, top, styleOverride, fabricObject) {
+                    ctx.save();
+                    ctx.translate(left, top);
+                    ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+                    ctx.fillStyle = '#4f46e5';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 12, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.drawImage(editIconImg, -10, -10, 20, 20);
+                    ctx.restore();
+                }
+
+                fabric.Object.prototype.controls.edit = new fabric.Control({
+                    x: 0, y: 0.5, offsetY: 30, cursorStyle: 'pointer',
+                    actionHandler: editActionHandler,
+                    actionName: 'edit',
+                    render: renderEditIcon,
+                    cornerSize: 24
+                });
+
+
                 canvas.on({
                     'object:added': saveState,
                     'object:removed': saveState,
@@ -462,27 +502,12 @@
                     'selection:updated': handleSelectionChange,
                     'selection:cleared': handleSelectionChange,
                     'object:moving': handleSnapping,
-                    'mouse:dblclick': (options) => {
-                        const target = options.target;
-                        if (target) {
-                            if (target.customType === 'text' || target.type === 'i-text') {
-                                target.enterEditing();
-                                target.selectionStart = target.text.length;
-                                target.selectionEnd = target.text.length;
-                                canvas.renderAll();
-                            } 
-                            else if (target.customType === 'image') {
-                                editingObject = target;
-                                openCropper(editingObject.originalSrc, editingObject.cornerRadiusPercent);
-                            }
-                        }
-                    },
-                    // NEW: Auto-resize text while typing
+                    // Double click is now removed, replaced by the edit button
                     'text:changed': (e) => {
                         const obj = e.target;
                         if (!obj || obj.get('customType') !== 'text') return;
 
-                        const maxWidth = canvas.width - 40; // 20px margin on each side
+                        const maxWidth = canvas.width - 40;
                         const currentWidth = obj.getScaledWidth();
 
                         if (currentWidth > maxWidth) {
@@ -595,7 +620,7 @@
         document.getElementById('add-frame-btn').addEventListener('click', () => openFrameGallery());
 
         // --- Selection & Contextual Controls Logic ---
-        function handleSelectionChange() {
+        function handleSelectionChange(e) {
             const activeObject = canvas.getActiveObject();
             const isObjectSelected = !!activeObject;
             
@@ -608,23 +633,29 @@
             frameControls.classList.add('hidden');
             bottomToolbar.classList.remove('hidden');
 
-            if (activeObject && activeObject.isEditing) {
-                 bottomToolbar.classList.add('hidden');
-                 contextualControls.classList.remove('hidden');
-                 if (activeObject.customType === 'text') {
-                     updateTextControls(activeObject);
-                     textControls.classList.remove('hidden');
-                 }
-            } else if (activeObject && activeObject.type !== 'activeSelection') {
-                bottomToolbar.classList.add('hidden');
-                contextualControls.classList.remove('hidden');
-                
-                if (activeObject.customType === 'text') {
-                    updateTextControls(activeObject);
-                    textControls.classList.remove('hidden');
-                } else if (activeObject.customType === 'frame') {
-                    updateFrameControls(activeObject);
-                    frameControls.classList.remove('hidden');
+            if (activeObject) {
+                 // NEW: Show/hide edit control based on object type
+                const isEditable = activeObject.customType === 'text' || activeObject.customType === 'image';
+                activeObject.controls.edit.visible = isEditable;
+
+                if (activeObject.isEditing) {
+                    bottomToolbar.classList.add('hidden');
+                    contextualControls.classList.remove('hidden');
+                    if (activeObject.customType === 'text') {
+                        updateTextControls(activeObject);
+                        textControls.classList.remove('hidden');
+                    }
+                } else if (activeObject.type !== 'activeSelection') {
+                    bottomToolbar.classList.add('hidden');
+                    contextualControls.classList.remove('hidden');
+                    
+                    if (activeObject.customType === 'text') {
+                        updateTextControls(activeObject);
+                        textControls.classList.remove('hidden');
+                    } else if (activeObject.customType === 'frame') {
+                        updateFrameControls(activeObject);
+                        frameControls.classList.remove('hidden');
+                    }
                 }
             }
         }
