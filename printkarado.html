@@ -427,40 +427,23 @@
                     'selection:updated': handleSelectionChange,
                     'selection:cleared': handleSelectionChange,
                     'object:moving': handleSnapping,
-                    // --- NEW: Mobile-friendly tap detection ---
-                    'mouse:down': (options) => {
-                        if (options.target) {
-                            touchStartPos = options.pointer;
-                            touchStartTime = Date.now();
-                        } else {
-                            touchStartPos = null;
-                        }
-                    },
-                    'mouse:up': (options) => {
-                        if (options.target && touchStartPos) {
-                            const touchEndPos = options.pointer;
-                            const dist = Math.hypot(touchEndPos.x - touchStartPos.x, touchEndPos.y - touchStartPos.y);
-                            const elapsedTime = Date.now() - touchStartTime;
-
-                            // Treat as a "tap" if it's a short press and didn't move much
-                            if (elapsedTime < 300 && dist < 10) {
-                                const target = options.target;
-                                // For text, enter editing mode on tap
-                                if (target.customType === 'text' || target.type === 'i-text') {
-                                    target.enterEditing();
-                                    // Position cursor at the end for convenience
-                                    target.selectionStart = target.text.length;
-                                    target.selectionEnd = target.text.length;
-                                    canvas.renderAll();
-                                } 
-                                // For images, open the cropper on tap (replaces double-click)
-                                else if (target.customType === 'image') {
-                                    editingObject = target;
-                                    openCropper(editingObject.originalSrc, editingObject.cornerRadiusPercent);
-                                }
+                    // --- REVERTED: Double-click for editing ---
+                    'mouse:dblclick': (options) => {
+                        const target = options.target;
+                        if (target) {
+                            // For text, enter editing mode on double-click
+                            if (target.customType === 'text' || target.type === 'i-text') {
+                                target.enterEditing();
+                                target.selectionStart = target.text.length;
+                                target.selectionEnd = target.text.length;
+                                canvas.renderAll();
+                            } 
+                            // For images, open the cropper on double-click
+                            else if (target.customType === 'image') {
+                                editingObject = target;
+                                openCropper(editingObject.originalSrc, editingObject.cornerRadiusPercent);
                             }
                         }
-                        touchStartPos = null; // Reset for the next interaction
                     },
                 });
             }
@@ -517,7 +500,7 @@
         const colorPresets = document.getElementById('color-presets');
         const colorToImageMap = {
             '#ffffff': 'https://naazeam.github.io/white1.png',
-            '#000000': 'https://naazeam.github.io/black1.png',
+            '#000000': 'https://naazeam.github.io/black2.png',
             '#ef4444': 'https://naazeam.github.io/red1.png',
             '#3b82f6': 'https://naazeam.github.io/blue1.png',
             '#22c55e': 'https://naazeam.github.io/green1.png'
@@ -567,6 +550,7 @@
                  bottomToolbar.classList.add('hidden');
                  contextualControls.classList.remove('hidden');
                  if (activeObject.customType === 'text') {
+                     updateTextControls(activeObject);
                      textControls.classList.remove('hidden');
                  }
             } else if (activeObject && activeObject.type !== 'activeSelection') {
