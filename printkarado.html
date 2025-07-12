@@ -320,10 +320,21 @@
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full">
             <h3 class="text-xl font-bold mb-4">Crop & Shape Your Image</h3>
             <div class="img-container mb-4"><img id="image-to-crop" src=""></div>
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700">Corner Radius: <span id="corner-radius-value">0</span>%</label>
-                <input type="range" id="corner-radius-slider" min="0" max="100" value="0" class="w-full mt-2">
+            
+            <div class="flex items-center gap-4 mb-6">
+                <div class="flex-grow">
+                    <label class="block text-sm font-medium text-gray-700">Corner Radius: <span id="corner-radius-value">0</span>%</label>
+                    <input type="range" id="corner-radius-slider" min="0" max="100" value="0" class="w-full mt-1">
+                </div>
+                <div class="flex-shrink-0">
+                     <button id="rotate-image-btn" title="Rotate 90°" class="w-10 h-10 rounded-md bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1.337A7.02 7.02 0 003.52 7.52a1 1 0 001.414 1.414A5.02 5.02 0 019 4.337V6a1 1 0 102 0V3a1 1 0 00-1-1zm1.002 14.002a4.982 4.982 0 01-5.002-4.002 1 1 0 10-2 .004A6.982 6.982 0 009 18.663V17a1 1 0 10-2 0v2a1 1 0 001 1h.004a1 1 0 00.996-1.002v-1.66A4.982 4.982 0 0111.002 16zm-2.416-2.416a1 1 0 00-1.414-1.414 5.02 5.02 0 01-2.652-2.652 1 1 0 00-1.83.81A7.02 7.02 0 007.52 16.48a1 1 0 001.414-1.414 5.02 5.02 0 01-2.416-2.416zM12.48 3.52a1 1 0 00-1.414 1.414A5.02 5.02 0 0115.663 9H14a1 1 0 100 2h3a1 1 0 001-1v-3a1 1 0 10-2 0v1.337A7.02 7.02 0 0012.48 3.52z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
             </div>
+
             <div class="flex justify-end gap-4 mt-6">
                 <button id="cancel-crop-btn" class="px-4 py-2 rounded-md">Cancel</button>
                 <button id="done-crop-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-md">Done</button>
@@ -339,7 +350,7 @@
                 <button id="close-gallery-btn" class="w-8 h-8">&times;</button>
             </div>
             <div id="gallery-content">
-                <!-- Content for fonts, emojis, frames will be injected here -->
+                <!-- Content for fonts will be injected here -->
             </div>
         </div>
     </div>
@@ -401,6 +412,8 @@
                 fabric.Object.prototype.borderScaleFactor = 2;
                 fabric.Object.prototype.centeredScaling = true;
                 fabric.Object.prototype.lockUniScaling = true;
+                
+                fabric.Object.prototype.lockScalingFlip = true;
 
                 fabric.Object.prototype.setControlsVisibility({
                     mt: false, mb: false, ml: false, mr: false,
@@ -499,7 +512,6 @@
                     }
                 });
                 
-                // *** IMPROVED GESTURES: Initialize Touch Gestures ***
                 setupTouchGestures();
             }
 
@@ -516,7 +528,6 @@
         initializeCanvas();
         new ResizeObserver(initializeCanvas).observe(tshirtWrapper);
         
-        // *** IMPROVED GESTURES: Pinch-to-Zoom and Rotation Logic with Dominant Action ***
         function setupTouchGestures() {
             let touchStartDistance = 0;
             let touchStartAngle = 0;
@@ -524,10 +535,10 @@
             let startAngle = 0;
             let activeObjectForGesture = null;
             let isGestureInProgress = false;
-            let gestureAction = null; // Can be 'scale', 'rotate', or null
+            let gestureAction = null; 
 
-            const ROTATION_THRESHOLD = 8; // Min degrees to start rotation
-            const SCALE_THRESHOLD = 5;    // Min pixels change to start scaling
+            const ROTATION_THRESHOLD = 8; 
+            const SCALE_THRESHOLD = 5;    
 
             const upperCanvas = canvas.upperCanvasEl;
 
@@ -535,7 +546,7 @@
                 if (e.touches.length === 2 && canvas.getActiveObject()) {
                     e.preventDefault();
                     isGestureInProgress = true;
-                    gestureAction = null; // Reset action on new gesture
+                    gestureAction = null; 
                     activeObjectForGesture = canvas.getActiveObject();
                     
                     const touch1 = e.touches[0];
@@ -550,7 +561,7 @@
             }, { passive: false });
 
             upperCanvas.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2 && isGestureInProgress && activeObjectForGeste) {
+                if (e.touches.length === 2 && isGestureInProgress && activeObjectForGesture) {
                     e.preventDefault();
                     const touch1 = e.touches[0];
                     const touch2 = e.touches[1];
@@ -561,7 +572,6 @@
                     const deltaDistance = Math.abs(currentDistance - touchStartDistance);
                     const deltaAngle = Math.abs(currentAngle - touchStartAngle);
                     
-                    // Determine the dominant action if not yet set
                     if (!gestureAction) {
                         if (deltaAngle > ROTATION_THRESHOLD && deltaAngle > deltaDistance) {
                             gestureAction = 'rotate';
@@ -570,12 +580,10 @@
                         }
                     }
 
-                    // Perform the dominant action
                     if (gestureAction === 'rotate') {
                         const angleDiff = getAngle(touch1, touch2) - touchStartAngle;
                         let newAngle = startAngle + angleDiff;
                         
-                        // Apply snapping to the rotation
                         const snapAngle = 45;
                         const snapThreshold = 15;
                         const snappedAngle = Math.round(newAngle / snapAngle) * snapAngle;
@@ -586,7 +594,10 @@
 
                     } else if (gestureAction === 'scale') {
                         const scaleRatio = currentDistance / touchStartDistance;
-                        const newScale = startScale * scaleRatio;
+                        let newScale = startScale * scaleRatio;
+                        
+                        newScale = Math.max(0.01, newScale);
+                        
                         activeObjectForGesture.set({
                             scaleX: newScale,
                             scaleY: newScale
@@ -602,7 +613,7 @@
             upperCanvas.addEventListener('touchend', (e) => {
                 if (isGestureInProgress) {
                     if (e.touches.length < 2) {
-                        if (gestureAction) { // Only save state if an action was performed
+                        if (gestureAction) { 
                            saveState();
                         }
                         isGestureInProgress = false;
@@ -892,6 +903,7 @@
         const cropModal = document.getElementById('crop-modal');
         const imageToCrop = document.getElementById('image-to-crop');
         const cornerRadiusSlider = document.getElementById('corner-radius-slider');
+        const rotateImageBtn = document.getElementById('rotate-image-btn');
         
         logoUpload.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -902,12 +914,51 @@
             e.target.value = '';
         });
 
+        rotateImageBtn.addEventListener('click', () => {
+            if (cropper) {
+                cropper.rotate(90);
+                // *** FIX: Fit image to container after rotation ***
+                // This ensures the rotated image is fully visible
+                setTimeout(() => {
+                    const containerData = cropper.getContainerData();
+                    const canvasData = cropper.getCanvasData();
+                    const newCanvasData = {
+                        left: (containerData.width - canvasData.width) / 2,
+                        top: (containerData.height - canvasData.height) / 2,
+                        width: canvasData.width,
+                        height: canvasData.height,
+                    };
+                    cropper.setCanvasData(newCanvasData);
+                    cropper.setCropBoxData({
+                        left: (containerData.width - cropper.getCropBoxData().width) / 2,
+                        top: (containerData.height - cropper.getCropBoxData().height) / 2,
+                    });
+                }, 50); // A small delay to let cropper process the rotation
+            }
+        });
+
         function openCropper(src, radiusPercent) {
             imageToCrop.src = src;
             cropModal.classList.remove('hidden');
             modalBackdrop.classList.remove('hidden');
             if (cropper) cropper.destroy();
-            cropper = new Cropper(imageToCrop, { viewMode: 1, background: false, autoCrop: true });
+            cropper = new Cropper(imageToCrop, { 
+                viewMode: 1, 
+                background: false, 
+                autoCrop: true,
+                // Ensure the cropper box fits within the container
+                responsive: true,
+                checkCrossOrigin: false,
+                autoCropArea: 0.8,
+                ready: function () {
+                    // On ready, ensure the image is fitted correctly
+                    const containerData = this.cropper.getContainerData();
+                    this.cropper.setCanvasData({
+                        left: (containerData.width - this.cropper.getCanvasData().width) / 2,
+                        top: (containerData.height - this.cropper.getCanvasData().height) / 2,
+                    });
+                }
+            });
             cornerRadiusSlider.value = radiusPercent;
             document.getElementById('corner-radius-value').textContent = radiusPercent;
         }
