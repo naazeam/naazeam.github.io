@@ -388,7 +388,7 @@
         const historyLimit = 20;
         const customProperties = ['customType', 'originalSrc', 'cornerRadiusPercent', 'isGuideline'];
         const googleFonts = ["Roboto", "Lobster", "Pacifico", "Bangers", "Press Start 2P", "Oswald", "Lato", "Montserrat", "Raleway", "Poppins", "Nunito", "Merriweather", "Playfair Display", "Dancing Script", "Indie Flower", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Caveat"];
-        const emojis = ['😀', '😂', '😍', '😎', '🤔', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '�', '🌮', '🎂', '🥑', '🍓', '❤️', '💯', '⭐', '🚀', '💻', '🎸'];
+        const emojis = ['😀', '😂', '😍', '😎', '🤔', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '🍔', '🌮', '🎂', '🥑', '🍓', '❤️', '💯', '⭐', '🚀', '💻', '🎸'];
 
         // --- Element Selectors ---
         const canvasEl = document.getElementById('c');
@@ -421,9 +421,6 @@
                 });
                 canvas.setDimensions({ width, height });
             } else {
-                // *** FIX APPLIED HERE ***
-                // preserveObjectStacking ensures that the selected object doesn't
-                // visually jump to the top of the canvas, respecting its true z-index.
                 canvas = new fabric.Canvas('c', { 
                     width, 
                     height,
@@ -535,6 +532,9 @@
                         }
                     }
                 });
+                
+                // *** NEW FEATURE: Initialize Touch Gestures ***
+                setupTouchGestures();
             }
 
             const guidelineProps = { stroke: '#e0e0e0', strokeDashArray: [5, 5], selectable: false, evented: false, excludeFromExport: true, isGuideline: true };
@@ -549,6 +549,93 @@
         }
         initializeCanvas();
         new ResizeObserver(initializeCanvas).observe(tshirtWrapper);
+        
+        // *** NEW FEATURE: Pinch-to-Zoom and Rotation Logic ***
+        function setupTouchGestures() {
+            let touchStartDistance = 0;
+            let touchStartAngle = 0;
+            let startScale = 1;
+            let startAngle = 0;
+            let activeObjectForGesture = null;
+            let isGestureInProgress = false;
+
+            const upperCanvas = canvas.upperCanvasEl;
+
+            // Listen for the start of a two-finger touch
+            upperCanvas.addEventListener('touchstart', (e) => {
+                // Check for two touches and an active object
+                if (e.touches.length === 2 && canvas.getActiveObject()) {
+                    e.preventDefault(); // Prevent default browser actions like page zoom
+                    isGestureInProgress = true;
+                    activeObjectForGesture = canvas.getActiveObject();
+                    
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    
+                    // Calculate initial distance and angle between fingers
+                    touchStartDistance = getDistance(touch1, touch2);
+                    touchStartAngle = getAngle(touch1, touch2);
+                    
+                    // Store the object's initial scale and angle
+                    startScale = activeObjectForGesture.scaleX;
+                    startAngle = activeObjectForGesture.angle;
+                }
+            }, { passive: false });
+
+            // Listen for finger movement
+            upperCanvas.addEventListener('touchmove', (e) => {
+                // Check if our gesture is active
+                if (e.touches.length === 2 && isGestureInProgress && activeObjectForGesture) {
+                    e.preventDefault();
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+
+                    // --- Scaling Logic ---
+                    const currentDistance = getDistance(touch1, touch2);
+                    const scaleRatio = currentDistance / touchStartDistance;
+                    const newScale = startScale * scaleRatio;
+                    activeObjectForGesture.set({
+                        scaleX: newScale,
+                        scaleY: newScale
+                    });
+
+                    // --- Rotation Logic ---
+                    const currentAngle = getAngle(touch1, touch2);
+                    const angleDiff = currentAngle - touchStartAngle;
+                    const newAngle = startAngle + angleDiff;
+                    activeObjectForGesture.set('angle', newAngle);
+
+                    canvas.renderAll(); // Re-render the canvas to show changes
+                }
+            }, { passive: false });
+
+            // Listen for the end of the touch
+            upperCanvas.addEventListener('touchend', (e) => {
+                if (isGestureInProgress) {
+                    // If less than two fingers are on the screen, the gesture has ended
+                    if (e.touches.length < 2) {
+                        isGestureInProgress = false;
+                        activeObjectForGesture = null;
+                        saveState(); // Save the final transformation to the history stack
+                    }
+                }
+            });
+
+            // Helper function to calculate distance between two touch points
+            function getDistance(touch1, touch2) {
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            // Helper function to calculate the angle between two touch points
+            function getAngle(touch1, touch2) {
+                const dx = touch2.clientX - touch1.clientX;
+                const dy = touch2.clientY - touch1.clientY;
+                return Math.atan2(dy, dx) * 180 / Math.PI;
+            }
+        }
+
 
         // --- History (Undo/Redo) Logic ---
         function updateUndoRedoButtons() {
@@ -761,9 +848,6 @@
             canvas.discardActiveObject().renderAll();
         });
         
-        // *** FIX APPLIED HERE ***
-        // Simplified layer controls. `preserveObjectStacking` handles the visual update,
-        // so we just need to call the layering method and re-render.
         bringForwardBtn.addEventListener('click', () => {
             const activeObject = canvas.getActiveObject();
             if (activeObject) {
