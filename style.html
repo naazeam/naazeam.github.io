@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imagaze Stylizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-accent: #00aaff;
+            --secondary-accent: #ff00ff;
+            --bg-color: #0d0c1d;
+            --surface-color: rgba(22, 21, 46, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-family);
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 85%, hsla(280, 84%, 54%, 0.2), transparent 30%),
+                radial-gradient(circle at 85% 15%, hsla(220, 84%, 54%, 0.25), transparent 35%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: var(--surface-color);
+            backdrop-filter: blur(25px) saturate(150%);
+            -webkit-backdrop-filter: blur(25px) saturate(150%);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 50px var(--shadow-color);
+            border: 1px solid var(--glass-border);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .image-panel {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        
+        .image-display {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            flex-grow: 1;
+        }
+        
+        #result-display.has-image {
+             background-image: 
+                linear-gradient(45deg, #222 25%, transparent 25%), 
+                linear-gradient(-45deg, #222 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #222 75%), 
+                linear-gradient(-45deg, transparent 75%, #222 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            transition: background-color 0.3s;
+        }
+        .upload-placeholder:hover {
+            background-color: rgba(0, 170, 255, 0.05);
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        
+        .panel-footer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background-color: var(--primary-accent);
+            color: white;
+        }
+
+        .btn.upload-btn {
+            font-size: 1.2rem;
+            padding: 15px 40px;
+        }
+        
+        .btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+        .btn:active { transform: translateY(-1px) scale(1.02); }
+
+        .btn-secondary {
+            background-color: #3a3a3c;
+        }
+        .btn-secondary:hover { background-color: #4a4a4c; }
+        
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            background-color: #555;
+        }
+        
+        .loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 12, 29, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+        
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid var(--glass-border);
+            border-radius: 50%;
+            border-top-color: var(--primary-accent);
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-text { font-size: 1rem; color: var(--primary-accent); }
+        
+        .settings-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .settings-panel h2 {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .settings-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        
+        .setting-item { display: flex; flex-direction: column; gap: 15px; }
+        .setting-label { font-weight: 500; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; }
+        .setting-label span { font-weight: 600; color: var(--text-primary); background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; }
+        
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 5px; outline: none;
+            transition: background 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px;
+            background: var(--primary-accent);
+            cursor: pointer; border-radius: 50%;
+            border: 3px solid var(--bg-color);
+            transition: transform 0.2s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px; height: 20px;
+            background: var(--primary-accent);
+            cursor: pointer; border-radius: 50%;
+            border: 3px solid var(--bg-color);
+        }
+        
+        footer {
+            margin-top: 30px; text-align: center;
+            color: var(--text-secondary); opacity: 0.6;
+            font-size: 0.9rem;
+        }
+        
+        @media (min-width: 900px) {
+            .main-content {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            .settings-panel {
+                width: 320px;
+                flex-shrink: 0;
+            }
+            .settings-group {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+   <div class="container">
+       <header>
+           <h1>Imagaze Stylizer</h1>
+           <p class="subtitle">Stylize your images with AI. Adjust settings for a unique look and feel.</p>
+       </header>
+      
+       <div class="main-content">
+            <div class="image-panel">
+                <div class="image-display" id="result-display">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <button class="btn upload-btn" id="uploadBtn">Add Image</button>
+                    </div>
+                    <img id="resultImage" class="result-image">
+                    <div id="loadingIndicator" class="loading">
+                        <div class="spinner"></div>
+                        <p class="loading-text">AI is thinking...</p>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
+                    <button id="downloadBtn" class="btn" disabled>Download</button>
+                </div>
+            </div>
+
+            <div class="settings-panel">
+                <h2>Advanced Settings</h2>
+                <div class="settings-group">
+                    <div class="setting-item">
+                        <label for="toleranceSlider" class="setting-label">Background Tolerance <span id="toleranceValue">60</span></label>
+                        <input type="range" id="toleranceSlider" min="10" max="150" value="60" disabled>
+                    </div>
+                    <div class="setting-item">
+                        <label for="edgeSlider" class="setting-label">Edge Sensitivity <span id="edgeValue">80</span></label>
+                        <input type="range" id="edgeSlider" min="30" max="150" value="80" disabled>
+                    </div>
+                </div>
+            </div>
+        </div>
+      
+       <footer>
+           <p>Engineered for a seamless creative workflow.</p>
+       </footer>
+   </div>
+
+   <input type="file" class="file-input" id="fileInput" accept="image/*">
+
+   <script>
+       // DOM Elements
+       const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+       const uploadBtn = document.getElementById('uploadBtn');
+       const fileInput = document.getElementById('fileInput');
+       const resetBtn = document.getElementById('resetBtn');
+       const resultDisplay = document.getElementById('result-display');
+       const resultImage = document.getElementById('resultImage');
+       const downloadBtn = document.getElementById('downloadBtn');
+       const loadingIndicator = document.getElementById('loadingIndicator');
+       const toleranceSlider = document.getElementById('toleranceSlider');
+       const edgeSlider = document.getElementById('edgeSlider');
+       const toleranceValue = document.getElementById('toleranceValue');
+       const edgeValue = document.getElementById('edgeValue');
+      
+       // State
+       let originalImage = null;
+       let processedImageURL = null;
+       let isProcessing = false;
+
+       function debounce(func, delay) {
+           let timeout;
+           return function(...args) {
+               const context = this;
+               clearTimeout(timeout);
+               timeout = setTimeout(() => func.apply(context, args), delay);
+           };
+       }
+
+       const processImage = async () => {
+           if (!originalImage || isProcessing) return;
+
+           isProcessing = true;
+           loadingIndicator.style.display = 'flex';
+           downloadBtn.disabled = true;
+
+           await new Promise(resolve => setTimeout(resolve, 50));
+
+           try {
+               const tolerance = parseInt(toleranceSlider.value);
+               const edgeThreshold = parseInt(edgeSlider.value);
+
+               const canvas = document.createElement('canvas');
+               const ctx = canvas.getContext('2d');
+               
+               canvas.width = originalImage.width;
+               canvas.height = originalImage.height;
+               ctx.drawImage(originalImage, 0, 0);
+               
+               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+               const data = imageData.data;
+               const resultData = ctx.createImageData(canvas.width, canvas.height);
+               
+               const bgSamples = [];
+               const samplePoints = [
+                   [0, 0], [canvas.width - 1, 0], [0, canvas.height - 1], [canvas.width - 1, canvas.height - 1],
+                   [Math.floor(canvas.width / 2), 0], [Math.floor(canvas.width / 2), canvas.height - 1],
+                   [0, Math.floor(canvas.height / 2)], [canvas.width - 1, Math.floor(canvas.height / 2)]
+               ];
+               samplePoints.forEach(p => bgSamples.push(getPixel(data, p[0], p[1], canvas.width)));
+
+               let avgR = 0, avgG = 0, avgB = 0;
+               bgSamples.forEach(pixel => { avgR += pixel[0]; avgG += pixel[1]; avgB += pixel[2]; });
+               avgR = Math.floor(avgR / bgSamples.length);
+               avgG = Math.floor(avgG / bgSamples.length);
+               avgB = Math.floor(avgB / bgSamples.length);
+               
+               for (let y = 0; y < canvas.height; y++) {
+                   for (let x = 0; x < canvas.width; x++) {
+                       const idx = (y * canvas.width + x) * 4;
+                       const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+                       
+                       const dist = Math.sqrt(Math.pow(r - avgR, 2) + Math.pow(g - avgG, 2) + Math.pow(b - avgB, 2));
+                       const isEdge = detectEdges(data, x, y, canvas.width, canvas.height, edgeThreshold);
+                       const isBackground = dist < tolerance && !isEdge;
+                       
+                       resultData.data[idx] = r;
+                       resultData.data[idx + 1] = g;
+                       resultData.data[idx + 2] = b;
+                       resultData.data[idx + 3] = isBackground ? 0 : 255;
+                   }
+               }
+               
+               ctx.putImageData(resultData, 0, 0);
+               
+               processedImageURL = canvas.toDataURL('image/png');
+               resultImage.src = processedImageURL;
+               resultImage.style.display = 'block';
+               uploadPlaceholder.style.display = 'none';
+               resultDisplay.classList.add('has-image');
+               downloadBtn.disabled = false;
+
+           } catch (error) {
+               console.error('Error processing image:', error);
+               alert('Failed to process image. Please try another one.');
+           } finally {
+               isProcessing = false;
+               loadingIndicator.style.display = 'none';
+           }
+       };
+
+       const debouncedProcessImage = debounce(processImage, 400);
+
+       const handleFileSelect = (file) => {
+           if (!file || !file.type.match('image.*')) {
+               alert('Please select a valid image file.');
+               return;
+           }
+           
+           const reader = new FileReader();
+           reader.onload = (e) => {
+               originalImage = new Image();
+               originalImage.onload = () => {
+                   toleranceSlider.disabled = false;
+                   edgeSlider.disabled = false;
+                   processImage();
+               };
+               originalImage.src = e.target.result;
+           };
+           reader.readAsDataURL(file);
+       };
+
+       uploadPlaceholder.addEventListener('click', () => fileInput.click());
+       uploadBtn.addEventListener('click', () => fileInput.click());
+       fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+       
+       toleranceSlider.addEventListener('input', () => {
+           toleranceValue.textContent = toleranceSlider.value;
+           if (originalImage) debouncedProcessImage();
+       });
+       edgeSlider.addEventListener('input', () => {
+           edgeValue.textContent = edgeSlider.value;
+           if (originalImage) debouncedProcessImage();
+       });
+       
+       downloadBtn.addEventListener('click', () => {
+           if (!processedImageURL) return;
+           const link = document.createElement('a');
+           link.href = processedImageURL;
+           link.download = `stylized-image-${Date.now()}.png`;
+           document.body.appendChild(link);
+           link.click();
+           document.body.removeChild(link);
+       });
+      
+       resetBtn.addEventListener('click', () => {
+           fileInput.value = '';
+           originalImage = null;
+           processedImageURL = null;
+           
+           resultImage.style.display = 'none';
+           uploadPlaceholder.style.display = 'flex';
+           resultDisplay.classList.remove('has-image');
+          
+           downloadBtn.disabled = true;
+           toleranceSlider.disabled = true;
+           edgeSlider.disabled = true;
+
+           toleranceSlider.value = 60;
+           edgeSlider.value = 80;
+           toleranceValue.textContent = 60;
+           edgeValue.textContent = 80;
+       });
+      
+       function getPixel(data, x, y, width) {
+           const idx = (y * width + x) * 4;
+           return [data[idx], data[idx + 1], data[idx + 2]];
+       }
+      
+       function detectEdges(data, x, y, width, height, threshold) {
+           if (x === 0 || y === 0 || x === width - 1 || y === height - 1) return false;
+           
+           const gx = (
+               -1 * getGray(data, x - 1, y - 1, width) + 1 * getGray(data, x + 1, y - 1, width) +
+               -2 * getGray(data, x - 1, y, width)     + 2 * getGray(data, x + 1, y, width) +
+               -1 * getGray(data, x - 1, y + 1, width) + 1 * getGray(data, x + 1, y + 1, width)
+           );
+           const gy = (
+               1 * getGray(data, x - 1, y - 1, width) + 2 * getGray(data, x, y - 1, width) + 1 * getGray(data, x + 1, y - 1, width) +
+              -1 * getGray(data, x - 1, y + 1, width) - 2 * getGray(data, x, y + 1, width) - 1 * getGray(data, x + 1, y + 1, width)
+           );
+           
+           return Math.sqrt(gx * gx + gy * gy) > threshold;
+       }
+
+       function getGray(data, x, y, width) {
+           const idx = (y * width + x) * 4;
+           return data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+       }
+
+   </script>
+</body>
+</html>
