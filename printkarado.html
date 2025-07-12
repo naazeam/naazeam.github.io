@@ -328,13 +328,13 @@
         <!-- Frame Controls -->
         <div id="frame-controls" class="hidden contextual-panel">
              <div class="flex items-center gap-2">
-                <label class="text-sm text-gray-600">Color:</label>
-                <div class="relative w-12 h-10">
-                    <input type="color" id="frame-color" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                    <div id="frame-color-display" class="w-full h-full rounded-md border border-gray-300" style="background-color: #000000;"></div>
-                </div>
-                <div class="flex-grow"></div>
-                <button id="close-contextual-btn" class="control-btn p-2">Done</button>
+                 <label class="text-sm text-gray-600">Color:</label>
+                 <div class="relative w-12 h-10">
+                     <input type="color" id="frame-color" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                     <div id="frame-color-display" class="w-full h-full rounded-md border border-gray-300" style="background-color: #000000;"></div>
+                 </div>
+                 <div class="flex-grow"></div>
+                 <button id="close-contextual-btn" class="control-btn p-2">Done</button>
              </div>
         </div>
     </div>
@@ -380,10 +380,12 @@
         let history = [];
         let historyIndex = -1;
         let historyLock = false;
+        let touchStartPos = null; // For tap detection
+        let touchStartTime = 0;   // For tap detection
         const historyLimit = 20;
         const customProperties = ['customType', 'originalSrc', 'cornerRadiusPercent', 'centeredScaling', 'isGuideline'];
         const googleFonts = ["Roboto", "Lobster", "Pacifico", "Bangers", "Press Start 2P", "Oswald", "Lato", "Montserrat", "Raleway", "Poppins", "Nunito", "Merriweather", "Playfair Display", "Dancing Script", "Indie Flower", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Caveat"];
-        const emojis = ['😀', '😂', '😍', '😎', '🤔', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '🍔', '🌮', '🍩', '🥑', '🍓', '❤️', '🔥', '⭐', '🚀', '💻', '🎸'];
+        const emojis = ['😀', '😂', '😍', '😎', '🤔', '🎉', '🐶', '🐱', '🦊', '🐼', '🦄', '🦖', '🍕', '🍔', '🌮', '�', '🥑', '🍓', '❤️', '🔥', '⭐', '🚀', '💻', '🎸'];
 
         // --- Element Selectors ---
         const canvasEl = document.getElementById('c');
@@ -408,7 +410,7 @@
             const { width, height } = tshirtWrapper.getBoundingClientRect();
             
             if (canvas) {
-                 // Remove old guidelines before resizing
+                // Remove old guidelines before resizing
                 canvas.getObjects().forEach(obj => {
                     if (obj.isGuideline) {
                         canvas.remove(obj);
@@ -416,11 +418,7 @@
                 });
                 canvas.setDimensions({ width, height });
             } else {
-                canvas = new fabric.Canvas('c', { 
-                    width, 
-                    height,
-                    preserveObjectStacking: true // IMPORTANT: Prevents auto re-ordering on selection
-                });
+                canvas = new fabric.Canvas('c', { width, height });
                 canvas.on({
                     'object:added': saveState,
                     'object:removed': saveState,
@@ -428,8 +426,42 @@
                     'selection:created': handleSelectionChange,
                     'selection:updated': handleSelectionChange,
                     'selection:cleared': handleSelectionChange,
-                    'mouse:dblclick': handleDoubleClick,
                     'object:moving': handleSnapping,
+                    // --- NEW: Mobile-friendly tap detection ---
+                    'mouse:down': (options) => {
+                        if (options.target) {
+                            touchStartPos = options.pointer;
+                            touchStartTime = Date.now();
+                        } else {
+                            touchStartPos = null;
+                        }
+                    },
+                    'mouse:up': (options) => {
+                        if (options.target && touchStartPos) {
+                            const touchEndPos = options.pointer;
+                            const dist = Math.hypot(touchEndPos.x - touchStartPos.x, touchEndPos.y - touchStartPos.y);
+                            const elapsedTime = Date.now() - touchStartTime;
+
+                            // Treat as a "tap" if it's a short press and didn't move much
+                            if (elapsedTime < 300 && dist < 10) {
+                                const target = options.target;
+                                // For text, enter editing mode on tap
+                                if (target.customType === 'text' || target.type === 'i-text') {
+                                    target.enterEditing();
+                                    // Position cursor at the end for convenience
+                                    target.selectionStart = target.text.length;
+                                    target.selectionEnd = target.text.length;
+                                    canvas.renderAll();
+                                } 
+                                // For images, open the cropper on tap (replaces double-click)
+                                else if (target.customType === 'image') {
+                                    editingObject = target;
+                                    openCropper(editingObject.originalSrc, editingObject.cornerRadiusPercent);
+                                }
+                            }
+                        }
+                        touchStartPos = null; // Reset for the next interaction
+                    },
                 });
             }
 
@@ -530,7 +562,14 @@
             frameControls.classList.add('hidden');
             bottomToolbar.classList.remove('hidden');
 
-            if (activeObject && activeObject.type !== 'activeSelection') {
+            if (activeObject && activeObject.isEditing) {
+                 // If an object is in editing mode, keep its controls visible
+                 bottomToolbar.classList.add('hidden');
+                 contextualControls.classList.remove('hidden');
+                 if (activeObject.customType === 'text') {
+                     textControls.classList.remove('hidden');
+                 }
+            } else if (activeObject && activeObject.type !== 'activeSelection') {
                 bottomToolbar.classList.add('hidden');
                 contextualControls.classList.remove('hidden');
                 
@@ -633,7 +672,7 @@
             }
         });
 
-        // --- General Controls (Remove, Double Click, Layering) ---
+        // --- General Controls (Remove, Layering) ---
         removeBtn.addEventListener('click', () => {
             canvas.getActiveObjects().forEach(obj => canvas.remove(obj));
             canvas.discardActiveObject().renderAll();
@@ -650,20 +689,16 @@
         sendBackwardBtn.addEventListener('click', () => {
             const activeObject = canvas.getActiveObject();
             if (activeObject) {
-                const currentIndex = canvas.getObjects().indexOf(activeObject);
-                // Prevent sending behind the two guidelines at index 0 and 1
-                if (currentIndex > 2) { 
-                    canvas.sendBackwards(activeObject);
-                }
+                canvas.sendBackwards(activeObject);
+                // Ensure it doesn't go behind guidelines
+                canvas.getObjects().forEach(obj => {
+                    if (obj.isGuideline) {
+                        canvas.sendToBack(obj);
+                    }
+                });
+                canvas.renderAll();
             }
         });
-
-        function handleDoubleClick(e) {
-            if (e.target?.customType === 'image') {
-                editingObject = e.target;
-                openCropper(editingObject.originalSrc, editingObject.cornerRadiusPercent);
-            }
-        }
         
         // --- Snapping Logic ---
         function handleSnapping(options) {
