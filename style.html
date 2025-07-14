@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imagaze Stylizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Imagaze</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -37,49 +37,37 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 10px;
             color: var(--text-primary);
         }
         
         .container {
             max-width: 1200px;
             width: 100%;
-            background: var(--surface-color);
-            backdrop-filter: blur(25px) saturate(150%);
-            -webkit-backdrop-filter: blur(25px) saturate(150%);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 20px 50px var(--shadow-color);
-            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
+
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
         }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            max-width: 650px;
-            margin: 0 auto;
-            line-height: 1.6;
+
+        .top-controls .left-group {
+            display: flex;
+            gap: 10px;
         }
         
         .main-content {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 20px;
+            width: 100%;
         }
 
         .image-panel {
@@ -91,7 +79,7 @@
         .image-display {
             position: relative;
             width: 100%;
-            height: 400px;
+            min-height: 450px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -104,10 +92,10 @@
         
         #result-display.has-image {
              background-image: 
-                linear-gradient(45deg, #222 25%, transparent 25%), 
-                linear-gradient(-45deg, #222 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #222 75%), 
-                linear-gradient(-45deg, transparent 75%, #222 75%);
+                linear-gradient(45deg, #333 25%, transparent 25%), 
+                linear-gradient(-45deg, #333 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #333 75%), 
+                linear-gradient(-45deg, transparent 75%, #333 75%);
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
@@ -121,30 +109,53 @@
             width: 100%;
             height: 100%;
             transition: background-color 0.3s;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            font-weight: 500;
+            text-align: center;
+            padding: 20px;
         }
-        .upload-placeholder:hover {
-            background-color: rgba(0, 170, 255, 0.05);
-        }
+        .upload-placeholder:hover { background-color: rgba(0, 170, 255, 0.05); }
 
-        .result-image {
-            max-width: 100%;
-            max-height: 100%;
+        #displayCanvas, #brushCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 95%; /* Margin for easier edge editing */
+            max-height: 95%; /* Margin for easier edge editing */
             object-fit: contain;
             display: none;
         }
+
+        #brushCanvas { z-index: 5; cursor: none; }
         
-        .panel-footer {
+        .canvas-overlay-controls {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            z-index: 6;
+            pointer-events: none;
             display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+            justify-content: space-between;
         }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .control-group.align-right { align-items: flex-end; }
         
         .btn {
-            padding: 12px 30px;
-            font-size: 1rem;
+            padding: 10px 20px;
+            font-size: 0.9rem;
             border-radius: 8px;
-            border: none;
+            border: 1px solid var(--glass-border);
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
@@ -156,361 +167,482 @@
             background-color: var(--primary-accent);
             color: white;
         }
-
-        .btn.upload-btn {
-            font-size: 1.2rem;
-            padding: 15px 40px;
-        }
         
-        .btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
-        .btn:active { transform: translateY(-1px) scale(1.02); }
-
-        .btn-secondary {
-            background-color: #3a3a3c;
+        .btn-overlay {
+            background: rgba(22, 21, 46, 0.7);
+            backdrop-filter: blur(10px);
+            width: 100px;
         }
-        .btn-secondary:hover { background-color: #4a4a4c; }
+
+        .btn:hover:not(:disabled) { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+        .btn:active:not(:disabled) { transform: translateY(0px) scale(1.02); }
+        .btn-secondary { background-color: #3a3a3c; }
+        .btn-secondary:hover:not(:disabled) { background-color: #4a4a4c; }
         
         .btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
-            background-color: #555;
+            background-color: #555 !important;
         }
         
+        .btn.active { background-color: var(--primary-accent); box-shadow: 0 0 15px var(--primary-accent); }
+
         .loading {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(13, 12, 29, 0.85);
-            backdrop-filter: blur(5px);
-            z-index: 10;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 12, 29, 0.85); backdrop-filter: blur(5px); z-index: 10;
         }
         
         .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid var(--glass-border);
-            border-radius: 50%;
-            border-top-color: var(--primary-accent);
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            width: 40px; height: 40px; border: 4px solid var(--glass-border);
+            border-radius: 50%; border-top-color: var(--primary-accent);
+            animation: spin 1s linear infinite; margin-bottom: 15px;
         }
-        
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        .loading-text { font-size: 1rem; color: var(--primary-accent); }
-        
-        .settings-panel {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 16px;
-            padding: 30px;
+        .settings-panel { 
+            background: var(--surface-color);
+            backdrop-filter: blur(25px) saturate(150%);
+            border-radius: 16px; 
+            padding: 30px; 
             border: 1px solid var(--glass-border);
-        }
-
-        .settings-panel h2 {
-            font-size: 1.4rem;
-            margin-bottom: 25px;
-            text-align: center;
-            font-weight: 600;
+            width: 100%;
         }
         
-        .settings-group {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
-        }
-        
-        .setting-item { display: flex; flex-direction: column; gap: 15px; }
+        .setting-item { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         .setting-label { font-weight: 500; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; }
         .setting-label span { font-weight: 600; color: var(--text-primary); background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; }
         
         input[type="range"] {
             -webkit-appearance: none; appearance: none;
-            width: 100%; height: 8px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 5px; outline: none;
-            transition: background 0.2s;
+            width: 100%; height: 8px; background: rgba(0, 0, 0, 0.4);
+            border-radius: 5px; outline: none; transition: background 0.2s;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none;
-            width: 20px; height: 20px;
-            background: var(--primary-accent);
-            cursor: pointer; border-radius: 50%;
-            border: 3px solid var(--bg-color);
-            transition: transform 0.2s ease;
+            -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
+            background: var(--primary-accent); cursor: pointer; border-radius: 50%;
+            border: 3px solid var(--bg-color); transition: transform 0.2s ease;
         }
         input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-        input[type="range"]::-moz-range-thumb {
-            width: 20px; height: 20px;
-            background: var(--primary-accent);
-            cursor: pointer; border-radius: 50%;
-            border: 3px solid var(--bg-color);
-        }
-        
-        footer {
-            margin-top: 30px; text-align: center;
-            color: var(--text-secondary); opacity: 0.6;
-            font-size: 0.9rem;
-        }
+
+        .file-input { display: none; }
         
         @media (min-width: 900px) {
-            .main-content {
-                flex-direction: row;
-                align-items: flex-start;
-            }
-            .settings-panel {
-                width: 320px;
-                flex-shrink: 0;
-            }
-            .settings-group {
-                grid-template-columns: 1fr;
-            }
-            h1 {
-                font-size: 2.8rem;
-            }
+            .main-content { flex-direction: row; align-items: flex-start; gap: 30px; }
+            .settings-panel { max-width: 320px; flex-shrink: 0; }
+            .image-panel { flex-grow: 1; }
         }
     </style>
 </head>
 <body>
    <div class="container">
-       <header>
-           <h1>Imagaze Stylizer</h1>
-           <p class="subtitle">Stylize your images with AI. Adjust settings for a unique look and feel.</p>
-       </header>
+       <div class="top-controls">
+            <div class="left-group">
+                <button class="btn btn-secondary" id="uploadBtn">Add Image</button>
+                <button class="btn btn-secondary" id="aiAdjustBtn" disabled>AI Adjust</button>
+            </div>
+           <button class="btn" id="downloadBtn" disabled>Download</button>
+       </div>
       
        <div class="main-content">
             <div class="image-panel">
                 <div class="image-display" id="result-display">
-                    <div class="upload-placeholder" id="uploadPlaceholder">
-                        <button class="btn upload-btn" id="uploadBtn">Add Image</button>
-                    </div>
-                    <img id="resultImage" class="result-image">
+                    <div class="upload-placeholder" id="uploadPlaceholder">Click or Drag Image Here</div>
+                    <canvas id="displayCanvas"></canvas>
+                    <canvas id="brushCanvas"></canvas>
                     <div id="loadingIndicator" class="loading">
                         <div class="spinner"></div>
                         <p class="loading-text">AI is thinking...</p>
                     </div>
-                </div>
-                <div class="panel-footer">
-                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
-                    <button id="downloadBtn" class="btn" disabled>Download</button>
+
+                    <div class="canvas-overlay-controls">
+                        <div class="control-group">
+                            <button id="undoBtn" class="btn btn-overlay" disabled>Undo</button>
+                            <button id="redoBtn" class="btn btn-overlay" disabled>Redo</button>
+                        </div>
+                        <div class="control-group align-right">
+                            <button id="eraseBtn" class="btn btn-overlay" disabled>Erase</button>
+                            <button id="restoreBtn" class="btn btn-overlay" disabled>Restore</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="settings-panel">
-                <h2>Advanced Settings</h2>
-                <div class="settings-group">
+            <div class="settings-panel" id="settingsPanel">
+                <div id="aiSettings" style="display: none;">
+                    <h2>AI Settings</h2>
                     <div class="setting-item">
-                        <label for="toleranceSlider" class="setting-label">Background Tolerance <span id="toleranceValue">60</span></label>
-                        <input type="range" id="toleranceSlider" min="10" max="150" value="60" disabled>
+                        <label for="toleranceSlider" class="setting-label">BG Tolerance <span id="toleranceValue">60</span></label>
+                        <input type="range" id="toleranceSlider" min="10" max="150" value="60">
                     </div>
                     <div class="setting-item">
                         <label for="edgeSlider" class="setting-label">Edge Sensitivity <span id="edgeValue">80</span></label>
-                        <input type="range" id="edgeSlider" min="30" max="150" value="80" disabled>
+                        <input type="range" id="edgeSlider" min="30" max="150" value="80">
                     </div>
                 </div>
+                <div id="brushSettings">
+                    <h2>Brush Settings</h2>
+                    <div class="setting-item">
+                        <label for="brushSizeSlider" class="setting-label">Size <span id="brushSizeValue">20</span></label>
+                        <input type="range" id="brushSizeSlider" min="5" max="100" value="20">
+                    </div>
+                    <div class="setting-item">
+                        <label for="brushHardnessSlider" class="setting-label">Hardness <span id="brushHardnessValue">80</span></label>
+                        <input type="range" id="brushHardnessSlider" min="0" max="100" value="80">
+                    </div>
+                </div>
+                 <button id="resetBtn" class="btn btn-secondary" style="width: 100%; margin-top: 20px;">Reset All</button>
             </div>
         </div>
-      
-       <footer>
-           <p>Engineered for a seamless creative workflow.</p>
-       </footer>
    </div>
 
    <input type="file" class="file-input" id="fileInput" accept="image/*">
 
    <script>
+    document.addEventListener('DOMContentLoaded', () => {
        // DOM Elements
-       const uploadPlaceholder = document.getElementById('uploadPlaceholder');
        const uploadBtn = document.getElementById('uploadBtn');
        const fileInput = document.getElementById('fileInput');
-       const resetBtn = document.getElementById('resetBtn');
-       const resultDisplay = document.getElementById('result-display');
-       const resultImage = document.getElementById('resultImage');
+       const aiAdjustBtn = document.getElementById('aiAdjustBtn');
        const downloadBtn = document.getElementById('downloadBtn');
+       const resultDisplay = document.getElementById('result-display');
+       const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+       const displayCanvas = document.getElementById('displayCanvas');
+       const brushCanvas = document.getElementById('brushCanvas');
        const loadingIndicator = document.getElementById('loadingIndicator');
+       
+       const undoBtn = document.getElementById('undoBtn');
+       const redoBtn = document.getElementById('redoBtn');
+       const eraseBtn = document.getElementById('eraseBtn');
+       const restoreBtn = document.getElementById('restoreBtn');
+       const resetBtn = document.getElementById('resetBtn');
+
+       const aiSettings = document.getElementById('aiSettings');
+       const brushSettings = document.getElementById('brushSettings');
+       
        const toleranceSlider = document.getElementById('toleranceSlider');
-       const edgeSlider = document.getElementById('edgeSlider');
        const toleranceValue = document.getElementById('toleranceValue');
+       const edgeSlider = document.getElementById('edgeSlider');
        const edgeValue = document.getElementById('edgeValue');
-      
+       const brushSizeSlider = document.getElementById('brushSizeSlider');
+       const brushSizeValue = document.getElementById('brushSizeValue');
+       const brushHardnessSlider = document.getElementById('brushHardnessSlider');
+       const brushHardnessValue = document.getElementById('brushHardnessValue');
+
+       // Contexts
+       const displayCtx = displayCanvas.getContext('2d');
+       const brushCtx = brushCanvas.getContext('2d');
+
        // State
        let originalImage = null;
-       let processedImageURL = null;
+       let maskCanvas = document.createElement('canvas');
+       let maskCtx = maskCanvas.getContext('2d');
        let isProcessing = false;
+       let isDrawing = false;
+       let activeTool = 'brush'; // 'ai', 'brush'
+       let brushMode = 'erase'; // 'erase', 'restore'
+       let lastPos = { x: 0, y: 0 };
+
+       const MAX_HISTORY_STEPS = 15;
+       let historyStack = [];
+       let historyIndex = -1;
 
        function debounce(func, delay) {
            let timeout;
-           return function(...args) {
-               const context = this;
-               clearTimeout(timeout);
-               timeout = setTimeout(() => func.apply(context, args), delay);
-           };
+           return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); };
        }
-
+       
        const processImage = async () => {
            if (!originalImage || isProcessing) return;
-
            isProcessing = true;
            loadingIndicator.style.display = 'flex';
-           downloadBtn.disabled = true;
-
            await new Promise(resolve => setTimeout(resolve, 50));
 
            try {
                const tolerance = parseInt(toleranceSlider.value);
                const edgeThreshold = parseInt(edgeSlider.value);
-
-               const canvas = document.createElement('canvas');
-               const ctx = canvas.getContext('2d');
-               
-               canvas.width = originalImage.width;
-               canvas.height = originalImage.height;
-               ctx.drawImage(originalImage, 0, 0);
-               
-               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+               const processCanvas = document.createElement('canvas');
+               const processCtx = processCanvas.getContext('2d');
+               processCanvas.width = originalImage.width;
+               processCanvas.height = originalImage.height;
+               processCtx.drawImage(originalImage, 0, 0);
+               const imageData = processCtx.getImageData(0, 0, processCanvas.width, processCanvas.height);
                const data = imageData.data;
-               const resultData = ctx.createImageData(canvas.width, canvas.height);
                
-               const bgSamples = [];
-               const samplePoints = [
-                   [0, 0], [canvas.width - 1, 0], [0, canvas.height - 1], [canvas.width - 1, canvas.height - 1],
-                   [Math.floor(canvas.width / 2), 0], [Math.floor(canvas.width / 2), canvas.height - 1],
-                   [0, Math.floor(canvas.height / 2)], [canvas.width - 1, Math.floor(canvas.height / 2)]
-               ];
-               samplePoints.forEach(p => bgSamples.push(getPixel(data, p[0], p[1], canvas.width)));
+               maskCanvas.width = originalImage.width;
+               maskCanvas.height = originalImage.height;
+               const maskImageData = maskCtx.createImageData(originalImage.width, originalImage.height);
+               const maskData = maskImageData.data;
 
+               const bgSamples = [[0, 0], [processCanvas.width - 1, 0], [0, processCanvas.height - 1], [processCanvas.width - 1, processCanvas.height - 1], [Math.floor(processCanvas.width / 2), 0], [Math.floor(processCanvas.width / 2), processCanvas.height - 1], [0, Math.floor(processCanvas.height / 2)], [processCanvas.width - 1, Math.floor(processCanvas.height / 2)]].map(p => getPixel(data, p[0], p[1], processCanvas.width));
                let avgR = 0, avgG = 0, avgB = 0;
-               bgSamples.forEach(pixel => { avgR += pixel[0]; avgG += pixel[1]; avgB += pixel[2]; });
-               avgR = Math.floor(avgR / bgSamples.length);
-               avgG = Math.floor(avgG / bgSamples.length);
-               avgB = Math.floor(avgB / bgSamples.length);
+               bgSamples.forEach(p => { avgR += p[0]; avgG += p[1]; avgB += p[2]; });
+               avgR /= bgSamples.length; avgG /= bgSamples.length; avgB /= bgSamples.length;
                
-               for (let y = 0; y < canvas.height; y++) {
-                   for (let x = 0; x < canvas.width; x++) {
-                       const idx = (y * canvas.width + x) * 4;
-                       const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-                       
-                       const dist = Math.sqrt(Math.pow(r - avgR, 2) + Math.pow(g - avgG, 2) + Math.pow(b - avgB, 2));
-                       const isEdge = detectEdges(data, x, y, canvas.width, canvas.height, edgeThreshold);
+               for (let y = 0; y < processCanvas.height; y++) {
+                   for (let x = 0; x < processCanvas.width; x++) {
+                       const idx = (y * processCanvas.width + x) * 4;
+                       const dist = Math.sqrt(Math.pow(data[idx] - avgR, 2) + Math.pow(data[idx+1] - avgG, 2) + Math.pow(data[idx+2] - avgB, 2));
+                       const isEdge = detectEdges(data, x, y, processCanvas.width, processCanvas.height, edgeThreshold);
                        const isBackground = dist < tolerance && !isEdge;
-                       
-                       resultData.data[idx] = r;
-                       resultData.data[idx + 1] = g;
-                       resultData.data[idx + 2] = b;
-                       resultData.data[idx + 3] = isBackground ? 0 : 255;
+                       maskData[idx] = maskData[idx + 1] = maskData[idx + 2] = 255;
+                       maskData[idx + 3] = isBackground ? 0 : 255;
                    }
                }
+               maskCtx.putImageData(maskImageData, 0, 0);
                
-               ctx.putImageData(resultData, 0, 0);
-               
-               processedImageURL = canvas.toDataURL('image/png');
-               resultImage.src = processedImageURL;
-               resultImage.style.display = 'block';
-               uploadPlaceholder.style.display = 'none';
-               resultDisplay.classList.add('has-image');
-               downloadBtn.disabled = false;
+               resetHistory();
+               saveState();
+               updateDisplay();
 
-           } catch (error) {
-               console.error('Error processing image:', error);
-               alert('Failed to process image. Please try another one.');
-           } finally {
-               isProcessing = false;
-               loadingIndicator.style.display = 'none';
-           }
+               uploadPlaceholder.style.display = 'none';
+               [displayCanvas, brushCanvas].forEach(c => c.style.display = 'block');
+               resultDisplay.classList.add('has-image');
+               [downloadBtn, eraseBtn, restoreBtn, aiAdjustBtn].forEach(el => el.disabled = false);
+               uploadBtn.textContent = 'Change Image';
+               setBrushMode('erase');
+
+           } catch (error) { console.error('Error processing image:', error); alert('Failed to process image.');
+           } finally { isProcessing = false; loadingIndicator.style.display = 'none'; }
        };
 
        const debouncedProcessImage = debounce(processImage, 400);
 
        const handleFileSelect = (file) => {
-           if (!file || !file.type.match('image.*')) {
-               alert('Please select a valid image file.');
-               return;
-           }
-           
+           if (!file || !file.type.match('image.*')) { alert('Please select a valid image file.'); return; }
            const reader = new FileReader();
            reader.onload = (e) => {
                originalImage = new Image();
-               originalImage.onload = () => {
-                   toleranceSlider.disabled = false;
-                   edgeSlider.disabled = false;
-                   processImage();
-               };
+               originalImage.onload = () => { setActiveTool('ai'); processImage(); };
                originalImage.src = e.target.result;
            };
            reader.readAsDataURL(file);
        };
 
+       function updateDisplay() {
+            if (!originalImage) return;
+            const { width, height } = getCanvasFitDimensions(originalImage, resultDisplay);
+            [displayCanvas, brushCanvas].forEach(c => { c.width = width; c.height = height; });
+            displayCtx.clearRect(0, 0, width, height);
+            displayCtx.drawImage(originalImage, 0, 0, width, height);
+            displayCtx.globalCompositeOperation = 'destination-in';
+            displayCtx.drawImage(maskCanvas, 0, 0, width, height);
+            displayCtx.globalCompositeOperation = 'source-over';
+       }
+
+       function getCanvasFitDimensions(image, container) {
+            const margin = 0.95; // 95% scale
+            const containerRatio = container.clientWidth / container.clientHeight;
+            const imageRatio = image.width / image.height;
+            let width, height;
+            if (containerRatio > imageRatio) {
+                height = container.clientHeight * margin;
+                width = height * imageRatio;
+            } else {
+                width = container.clientWidth * margin;
+                height = width / imageRatio;
+            }
+            return { width, height };
+       }
+
+       function setActiveTool(tool) {
+           activeTool = tool;
+           aiAdjustBtn.classList.toggle('active', tool === 'ai');
+           
+           const isBrushTool = (tool === 'brush');
+           brushSettings.style.display = isBrushTool ? 'block' : 'none';
+           aiSettings.style.display = !isBrushTool ? 'block' : 'none';
+
+           if (tool === 'ai' && originalImage) {
+               debouncedProcessImage();
+           }
+       }
+
+        function setBrushMode(mode) {
+            brushMode = mode;
+            eraseBtn.classList.toggle('active', mode === 'erase');
+            restoreBtn.classList.toggle('active', mode === 'restore');
+            setActiveTool('brush');
+        }
+
+       function getEventPos(e) {
+            const rect = brushCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+       function drawLine(from, to) {
+            const scaledFrom = { x: from.x * (maskCanvas.width / brushCanvas.width), y: from.y * (maskCanvas.height / brushCanvas.height) };
+            const scaledTo = { x: to.x * (maskCanvas.width / brushCanvas.width), y: to.y * (maskCanvas.height / brushCanvas.height) };
+            
+            maskCtx.globalCompositeOperation = (brushMode === 'erase') ? 'destination-out' : 'source-over';
+
+            const brushSize = brushSizeSlider.value * (maskCanvas.width / brushCanvas.width);
+            const hardness = brushHardnessSlider.value / 100;
+            
+            maskCtx.lineJoin = maskCtx.lineCap = 'round';
+            maskCtx.lineWidth = brushSize;
+            
+            const grad = maskCtx.createRadialGradient(scaledTo.x, scaledTo.y, 0, scaledTo.x, scaledTo.y, brushSize / 2);
+            grad.addColorStop(0, 'white');
+            grad.addColorStop(hardness, 'white');
+            grad.addColorStop(1, 'rgba(255,255,255,0)');
+            maskCtx.strokeStyle = grad;
+            
+            maskCtx.beginPath();
+            maskCtx.moveTo(scaledFrom.x, scaledFrom.y);
+            maskCtx.lineTo(scaledTo.x, scaledTo.y);
+            maskCtx.stroke();
+            updateDisplay();
+       }
+
+       function drawBrushCursor(pos) {
+            brushCtx.clearRect(0, 0, brushCanvas.width, brushCanvas.height);
+            brushCtx.beginPath();
+            brushCtx.arc(pos.x, pos.y, brushSizeSlider.value / 2, 0, Math.PI * 2);
+            brushCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            brushCtx.lineWidth = 1;
+            brushCtx.stroke();
+       }
+       
+       function saveState() {
+           if (historyIndex < historyStack.length - 1) {
+               historyStack = historyStack.slice(0, historyIndex + 1);
+           }
+           historyStack.push(maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height));
+           if (historyStack.length > MAX_HISTORY_STEPS) {
+               historyStack.shift();
+           }
+           historyIndex = historyStack.length - 1;
+           updateUndoRedoButtons();
+       }
+
+       function undo() { if (historyIndex > 0) { historyIndex--; maskCtx.putImageData(historyStack[historyIndex], 0, 0); updateDisplay(); updateUndoRedoButtons(); } }
+       function redo() { if (historyIndex < historyStack.length - 1) { historyIndex++; maskCtx.putImageData(historyStack[historyIndex], 0, 0); updateDisplay(); updateUndoRedoButtons(); } }
+       function resetHistory() { historyStack = []; historyIndex = -1; updateUndoRedoButtons(); }
+       function updateUndoRedoButtons() {
+           const canUndo = historyIndex > 0;
+           const canRedo = historyIndex < historyStack.length - 1 && historyIndex !== -1;
+           undoBtn.disabled = !canUndo;
+           redoBtn.disabled = !canRedo;
+       }
+
+       // --- Event Listeners ---
        uploadPlaceholder.addEventListener('click', () => fileInput.click());
        uploadBtn.addEventListener('click', () => fileInput.click());
-       fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+       fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
        
-       toleranceSlider.addEventListener('input', () => {
-           toleranceValue.textContent = toleranceSlider.value;
-           if (originalImage) debouncedProcessImage();
-       });
-       edgeSlider.addEventListener('input', () => {
-           edgeValue.textContent = edgeSlider.value;
-           if (originalImage) debouncedProcessImage();
+       aiAdjustBtn.addEventListener('click', () => setActiveTool('ai'));
+
+       [toleranceSlider, edgeSlider].forEach(slider => {
+           slider.addEventListener('input', () => {
+               if (slider === toleranceSlider) toleranceValue.textContent = slider.value;
+               else edgeValue.textContent = slider.value;
+               if (originalImage && activeTool === 'ai') {
+                   debouncedProcessImage();
+               }
+           });
        });
        
+       eraseBtn.addEventListener('click', () => setBrushMode('erase'));
+       restoreBtn.addEventListener('click', () => setBrushMode('restore'));
+
+       [brushSizeSlider, brushHardnessSlider].forEach(slider => {
+           slider.addEventListener('input', () => {
+               if (slider === brushSizeSlider) brushSizeValue.textContent = slider.value;
+               else brushHardnessValue.textContent = slider.value;
+           });
+       });
+
+       undoBtn.addEventListener('click', undo);
+       redoBtn.addEventListener('click', redo);
+
+       function handleDrawStart(e) {
+            if (!originalImage || activeTool !== 'brush') return;
+            e.preventDefault();
+            isDrawing = true;
+            const pos = getEventPos(e);
+            lastPos = pos;
+            drawLine(lastPos, pos);
+       }
+
+       function handleDrawMove(e) {
+            const pos = getEventPos(e);
+            if (activeTool === 'brush') { drawBrushCursor(pos); }
+            if (!isDrawing || !originalImage) return;
+            e.preventDefault();
+            drawLine(lastPos, pos);
+            lastPos = pos;
+       }
+
+       function handleDrawEnd(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            isDrawing = false;
+            saveState();
+       }
+
+       brushCanvas.addEventListener('mousedown', handleDrawStart);
+       brushCanvas.addEventListener('mousemove', handleDrawMove);
+       brushCanvas.addEventListener('mouseup', handleDrawEnd);
+       brushCanvas.addEventListener('mouseleave', () => brushCtx.clearRect(0, 0, brushCanvas.width, brushCanvas.height));
+       brushCanvas.addEventListener('touchstart', handleDrawStart, { passive: false });
+       brushCanvas.addEventListener('touchmove', handleDrawMove, { passive: false });
+       brushCanvas.addEventListener('touchend', handleDrawEnd, { passive: false });
+
        downloadBtn.addEventListener('click', () => {
-           if (!processedImageURL) return;
+           if (!originalImage) return;
+           const finalCanvas = document.createElement('canvas');
+           const finalCtx = finalCanvas.getContext('2d');
+           finalCanvas.width = originalImage.width;
+           finalCanvas.height = originalImage.height;
+           finalCtx.drawImage(originalImage, 0, 0);
+           finalCtx.globalCompositeOperation = 'destination-in';
+           finalCtx.drawImage(maskCanvas, 0, 0);
            const link = document.createElement('a');
-           link.href = processedImageURL;
-           link.download = `stylized-image-${Date.now()}.png`;
+           link.href = finalCanvas.toDataURL('image/png');
+           link.download = `imagaze-export-${Date.now()}.png`;
            document.body.appendChild(link);
            link.click();
            document.body.removeChild(link);
        });
       
        resetBtn.addEventListener('click', () => {
-           fileInput.value = '';
-           originalImage = null;
-           processedImageURL = null;
-           
-           resultImage.style.display = 'none';
+           fileInput.value = ''; originalImage = null;
+           [displayCtx, brushCtx, maskCtx].forEach(ctx => ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height));
            uploadPlaceholder.style.display = 'flex';
+           [displayCanvas, brushCanvas].forEach(c => c.style.display = 'none');
            resultDisplay.classList.remove('has-image');
-          
-           downloadBtn.disabled = true;
-           toleranceSlider.disabled = true;
-           edgeSlider.disabled = true;
-
-           toleranceSlider.value = 60;
-           edgeSlider.value = 80;
-           toleranceValue.textContent = 60;
-           edgeValue.textContent = 80;
+           [downloadBtn, eraseBtn, restoreBtn, undoBtn, redoBtn, aiAdjustBtn].forEach(el => el.disabled = true);
+           uploadBtn.textContent = 'Add Image';
+           setActiveTool('brush'); // Default to brush settings view
+           aiSettings.style.display = 'none';
+           brushSettings.style.display = 'block';
+           eraseBtn.classList.remove('active');
+           restoreBtn.classList.remove('active');
+           aiAdjustBtn.classList.remove('active');
+           resetHistory();
        });
       
-       function getPixel(data, x, y, width) {
-           const idx = (y * width + x) * 4;
-           return [data[idx], data[idx + 1], data[idx + 2]];
-       }
-      
+       window.addEventListener('resize', debounce(updateDisplay, 100));
+
+       // --- Helper Functions ---
+       function getPixel(data, x, y, width) { const idx = (y * width + x) * 4; return [data[idx], data[idx + 1], data[idx + 2]]; }
        function detectEdges(data, x, y, width, height, threshold) {
-           if (x === 0 || y === 0 || x === width - 1 || y === height - 1) return false;
-           
-           const gx = (
-               -1 * getGray(data, x - 1, y - 1, width) + 1 * getGray(data, x + 1, y - 1, width) +
-               -2 * getGray(data, x - 1, y, width)     + 2 * getGray(data, x + 1, y, width) +
-               -1 * getGray(data, x - 1, y + 1, width) + 1 * getGray(data, x + 1, y + 1, width)
-           );
-           const gy = (
-               1 * getGray(data, x - 1, y - 1, width) + 2 * getGray(data, x, y - 1, width) + 1 * getGray(data, x + 1, y - 1, width) +
-              -1 * getGray(data, x - 1, y + 1, width) - 2 * getGray(data, x, y + 1, width) - 1 * getGray(data, x + 1, y + 1, width)
-           );
-           
-           return Math.sqrt(gx * gx + gy * gy) > threshold;
+           if (x < 1 || y < 1 || x > width - 2 || y > height - 2) return false;
+           const gx = (-1*getGray(data,x-1,y-1,width) + 1*getGray(data,x+1,y-1,width) + -2*getGray(data,x-1,y,width) + 2*getGray(data,x+1,y,width) + -1*getGray(data,x-1,y+1,width) + 1*getGray(data,x+1,y+1,width));
+           const gy = (1*getGray(data,x-1,y-1,width) + 2*getGray(data,x,y-1,width) + 1*getGray(data,x+1,y-1,width) + -1*getGray(data,x-1,y+1,width) - 2*getGray(data,x,y+1,width) - 1*getGray(data,x+1,y+1,width));
+           return Math.sqrt(gx*gx + gy*gy) > threshold;
        }
-
-       function getGray(data, x, y, width) {
-           const idx = (y * width + x) * 4;
-           return data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
-       }
-
+       function getGray(data, x, y, width) { const idx = (y*width+x)*4; return data[idx]*0.299 + data[idx+1]*0.587 + data[idx+2]*0.114; }
+       
+       // Initialize
+       setActiveTool('brush');
+       aiSettings.style.display = 'none';
+    });
    </script>
 </body>
 </html>
