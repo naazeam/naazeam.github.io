@@ -145,8 +145,8 @@
         #toast.show {
             bottom: 20px;
         }
-        /* Confirmation Modal */
-        #modal-backdrop {
+        /* Modal Styles */
+        .modal-backdrop {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
@@ -157,11 +157,11 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
-        #modal-backdrop.visible {
+        .modal-backdrop.visible {
             opacity: 1;
             pointer-events: auto;
         }
-        #modal {
+        .modal {
             position: fixed;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(0.95);
@@ -176,10 +176,14 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
             pointer-events: none;
         }
-        #modal-backdrop.visible #modal {
+        .modal-backdrop.visible .modal {
             opacity: 1;
             transform: translate(-50%, -50%) scale(1);
             pointer-events: auto;
+        }
+        #load-diagram-list {
+            max-height: 300px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -189,12 +193,12 @@
     <div id="main-content" class="relative w-full h-screen">
         <!-- Toolbar -->
         <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-30 pointer-events-none">
-            <h1 class="text-lg md:text-xl font-bold pointer-events-auto">Website Map</h1>
+            <h1 id="diagram-title" class="text-lg md:text-xl font-bold pointer-events-auto">Untitled Diagram</h1>
             <div class="flex items-center gap-2 md:gap-3 pointer-events-auto">
                 <button id="clear-btn" class="btn btn-secondary">Clear</button>
                 <button id="export-png-btn" class="btn btn-secondary">Export PNG</button>
-                <button id="save-btn" class="btn btn-secondary">Save</button>
-                <button id="add-node-btn" class="btn btn-primary">Add Page</button>
+                <button id="load-btn" class="btn btn-secondary">Load</button>
+                <button id="save-btn" class="btn btn-primary">Save</button>
             </div>
         </div>
 
@@ -207,13 +211,41 @@
 
     <!-- UI Elements -->
     <div id="toast"></div>
-    <div id="modal-backdrop">
-        <div id="modal">
-            <h3 id="modal-title" class="text-lg font-bold mb-2">Are you sure?</h3>
-            <p id="modal-text" class="text-text-secondary mb-6">This action cannot be undone.</p>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h3 id="confirmation-modal-title" class="text-lg font-bold mb-2">Are you sure?</h3>
+            <p id="confirmation-modal-text" class="text-text-secondary mb-6">This action cannot be undone.</p>
             <div class="flex justify-end gap-3">
-                <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
-                <button id="modal-confirm-btn" class="btn btn-danger">Confirm</button>
+                <button id="confirmation-modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button id="confirmation-modal-confirm-btn" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Save Modal -->
+    <div id="save-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h3 class="text-lg font-bold mb-4">Save Diagram</h3>
+            <label for="diagram-name-input" class="text-text-secondary mb-2 block">Diagram Name</label>
+            <input type="text" id="diagram-name-input" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-accent" placeholder="e.g., Main User Flow">
+            <div class="flex justify-end gap-3">
+                <button id="save-modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button id="save-modal-confirm-btn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Modal -->
+    <div id="load-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h3 class="text-lg font-bold mb-4">Load Diagram</h3>
+            <div id="load-diagram-list" class="space-y-2">
+                <!-- Saved diagrams will be populated here -->
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="load-modal-close-btn" class="btn btn-secondary">Close</button>
             </div>
         </div>
     </div>
@@ -229,14 +261,31 @@
                 nodesContainer: document.getElementById('nodes-container'),
                 addNodeBtn: document.getElementById('add-node-btn'),
                 saveBtn: document.getElementById('save-btn'),
+                loadBtn: document.getElementById('load-btn'),
                 exportPngBtn: document.getElementById('export-png-btn'),
                 clearBtn: document.getElementById('clear-btn'),
+                diagramTitle: document.getElementById('diagram-title'),
                 toast: document.getElementById('toast'),
-                modalBackdrop: document.getElementById('modal-backdrop'),
-                modalTitle: document.getElementById('modal-title'),
-                modalText: document.getElementById('modal-text'),
-                modalConfirmBtn: document.getElementById('modal-confirm-btn'),
-                modalCancelBtn: document.getElementById('modal-cancel-btn'),
+                
+                // Modals
+                confirmationModal: {
+                    backdrop: document.getElementById('confirmation-modal-backdrop'),
+                    title: document.getElementById('confirmation-modal-title'),
+                    text: document.getElementById('confirmation-modal-text'),
+                    confirmBtn: document.getElementById('confirmation-modal-confirm-btn'),
+                    cancelBtn: document.getElementById('confirmation-modal-cancel-btn'),
+                },
+                saveModal: {
+                    backdrop: document.getElementById('save-modal-backdrop'),
+                    input: document.getElementById('diagram-name-input'),
+                    confirmBtn: document.getElementById('save-modal-confirm-btn'),
+                    cancelBtn: document.getElementById('save-modal-cancel-btn'),
+                },
+                loadModal: {
+                    backdrop: document.getElementById('load-modal-backdrop'),
+                    list: document.getElementById('load-diagram-list'),
+                    closeBtn: document.getElementById('load-modal-close-btn'),
+                }
             };
             this.ctx = this.dom.canvas.getContext('2d');
 
@@ -247,6 +296,7 @@
             this.historyIndex = -1;
             this.nextNodeId = 0;
             this.selectedNodeId = null;
+            this.currentDiagramName = null;
             this.view = { x: 0, y: 0, scale: 1, isPanning: false, startPan: { x: 0, y: 0 } };
             this.mouse = { x: 0, y: 0, worldX: 0, worldY: 0 };
             
@@ -259,6 +309,8 @@
                 startDragMouse: { x: 0, y: 0 },
                 dragOffset: { x: 0, y: 0 },
             };
+            
+            this.lastTap = { time: 0, target: null };
 
             this.SOFT_COLORS = ['#F472B6', '#FBBF24', '#34D399', '#60A5FA', '#A78BFA', '#F87171', '#4FD1C5'];
         }
@@ -268,41 +320,38 @@
             this.attachEventListeners();
             this.resizeCanvas();
             
-            if (!this.loadFromStorage()) {
-                // Create a default layout if no save data is found
-                this.createNode(150, 200, "Home Page", 'rectangle', this.SOFT_COLORS[3]);
-                this.createNode(550, 200, "About Us", 'rectangle', this.SOFT_COLORS[2]);
-                this.connections.push({ from: 0, to: 1 });
-            }
-
+            this.clearCanvas(false); // Start with a fresh canvas
             this.saveState();
             this.renderAll();
         }
 
         // --- Event Listeners ---
         attachEventListeners() {
-            // Window and container events
             window.addEventListener('resize', () => this.resizeCanvas());
             const container = this.dom.diagramContainer;
             container.addEventListener('mousedown', e => this.handleMouseDown(e));
             container.addEventListener('mousemove', e => this.handleMouseMove(e));
             container.addEventListener('mouseup', e => this.handleMouseUp(e));
-            container.addEventListener('mouseleave', e => this.handleMouseUp(e)); // End drag if mouse leaves
+            container.addEventListener('mouseleave', e => this.handleMouseUp(e));
             container.addEventListener('wheel', e => this.handleWheel(e), { passive: false });
             container.addEventListener('dblclick', e => this.handleDoubleClick(e));
             container.addEventListener('keydown', e => this.handleKeyDown(e));
             
             // Touch events for mobile support
-            container.addEventListener('touchstart', e => this.handleMouseDown(e.touches[0]), { passive: false });
+            container.addEventListener('touchstart', e => {
+                e.preventDefault(); // Prevent ghost clicks and scrolling
+                this.handleTouchStart(e);
+            }, { passive: false });
             container.addEventListener('touchmove', e => { e.preventDefault(); this.handleMouseMove(e.touches[0]); }, { passive: false });
             container.addEventListener('touchend', e => this.handleMouseUp(e.changedTouches[0]));
 
             // Toolbar buttons
             this.dom.addNodeBtn.addEventListener('click', () => this.addNodeInCenter());
-            this.dom.saveBtn.addEventListener('click', () => this.saveToStorage());
+            this.dom.saveBtn.addEventListener('click', () => this.showSaveModal());
+            this.dom.loadBtn.addEventListener('click', () => this.showLoadModal());
             this.dom.exportPngBtn.addEventListener('click', () => this.exportAsPng());
             this.dom.clearBtn.addEventListener('click', () => {
-                this.showConfirmationModal('Clear Canvas', 'Are you sure you want to clear everything? This action cannot be undone.', () => this.clearCanvas());
+                this.showConfirmationModal('Clear Canvas', 'This will start a new, unsaved diagram.', () => this.clearCanvas(true));
             });
         }
 
@@ -379,7 +428,6 @@
                 const dx = toPoint.x - fromPoint.x;
                 const dy = toPoint.y - fromPoint.y;
                 const dist = Math.hypot(dx, dy);
-                // Increased the multiplier from 0.3 to 0.5 for more curve
                 const cpOffset = Math.max(50, dist * 0.5);
 
                 const cp1 = { x: fromPoint.x + (fromPoint.nx * cpOffset), y: fromPoint.y + (fromPoint.ny * cpOffset) };
@@ -467,10 +515,41 @@
         }
         
         // --- Interaction Handlers ---
+        handleTouchStart(e) {
+            const touch = e.touches[0];
+            const targetNodeEl = touch.target.closest('.node');
+            const targetNode = targetNodeEl; 
+
+            const now = new Date().getTime();
+            const timesince = now - (this.lastTap?.time || 0);
+
+            // Double tap on node to edit
+            if (targetNode && (timesince < 400) && (timesince > 0) && (this.lastTap.target === targetNode)) {
+                const nodeId = parseInt(targetNode.id.split('-')[1]);
+                this.makeEditable(targetNode.querySelector('.node-name'), nodeId);
+                this.lastTap = { time: 0, target: null }; // Reset tap
+                return; // Prevent starting a drag
+            }
+
+            // Double tap on canvas to create node
+            if (!targetNode && (timesince < 400) && (timesince > 0) && (this.lastTap.target === null)) {
+                this.updateMousePos(touch);
+                this.createNode(this.mouse.worldX - 80, this.mouse.worldY - 48, 'New Page');
+                this.saveState();
+                this.renderAll();
+                this.lastTap = { time: 0, target: null }; // Reset tap
+                return;
+            }
+            
+            this.lastTap = { time: now, target: targetNode };
+            
+            // If not a double tap, proceed with normal mousedown logic
+            this.handleMouseDown(touch);
+        }
+
         handleMouseDown(e) {
             this.updateMousePos(e);
             
-            // Pan with spacebar or middle mouse button
             if (e.code === 'Space' || e.button === 1) {
                 this.view.isPanning = true;
                 this.dom.diagramContainer.classList.add('panning');
@@ -566,7 +645,6 @@
             }
             this.view.scale = Math.max(0.1, Math.min(this.view.scale, 5));
 
-            // Zoom towards the mouse pointer
             this.view.x = this.mouse.x - (this.mouse.x - this.view.x) * (this.view.scale / oldScale);
             this.view.y = this.mouse.y - (this.mouse.y - this.view.y) * (this.view.scale / oldScale);
 
@@ -672,25 +750,20 @@
         }
 
         showConfirmationModal(title, text, onConfirm) {
-            this.dom.modalTitle.textContent = title;
-            this.dom.modalText.textContent = text;
-            this.dom.modalBackdrop.classList.add('visible');
+            this.dom.confirmationModal.title.textContent = title;
+            this.dom.confirmationModal.text.textContent = text;
+            this.dom.confirmationModal.backdrop.classList.add('visible');
 
-            const confirmHandler = () => {
-                onConfirm();
-                cleanup();
-            };
-            const cancelHandler = () => {
-                cleanup();
-            };
+            const confirmHandler = () => { onConfirm(); cleanup(); };
+            const cancelHandler = () => { cleanup(); };
             const cleanup = () => {
-                this.dom.modalBackdrop.classList.remove('visible');
-                this.dom.modalConfirmBtn.removeEventListener('click', confirmHandler);
-                this.dom.modalCancelBtn.removeEventListener('click', cancelHandler);
+                this.dom.confirmationModal.backdrop.classList.remove('visible');
+                this.dom.confirmationModal.confirmBtn.removeEventListener('click', confirmHandler);
+                this.dom.confirmationModal.cancelBtn.removeEventListener('click', cancelHandler);
             };
 
-            this.dom.modalConfirmBtn.addEventListener('click', confirmHandler, { once: true });
-            this.dom.modalCancelBtn.addEventListener('click', cancelHandler, { once: true });
+            this.dom.confirmationModal.confirmBtn.addEventListener('click', confirmHandler, { once: true });
+            this.dom.confirmationModal.cancelBtn.addEventListener('click', cancelHandler, { once: true });
         }
         
         showColorPalette(nodeId, nodeEl) {
@@ -752,11 +825,13 @@
             element.addEventListener('keydown', onKeydown);
         }
         
-        clearCanvas() {
+        clearCanvas(save = true) {
             this.nodes = [];
             this.connections = [];
             this.nextNodeId = 0;
-            this.saveState();
+            this.currentDiagramName = null;
+            this.updateDiagramTitle();
+            if (save) this.saveState();
             this.renderAll();
         }
         
@@ -779,23 +854,18 @@
             const contentWidth = maxX - minX;
             const contentHeight = maxY - minY;
             
-            const exportScale = 2; // For higher resolution
+            const exportScale = 2;
             const offscreenCanvas = document.createElement('canvas');
             offscreenCanvas.width = (contentWidth + padding * 2) * exportScale;
             offscreenCanvas.height = (contentHeight + padding * 2) * exportScale;
             const offCtx = offscreenCanvas.getContext('2d');
             
-            // Draw background
             offCtx.fillStyle = '#111827';
             offCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-            
-            // Prepare drawing context
             offCtx.translate((-minX + padding) * exportScale, (-minY + padding) * exportScale);
 
-            // Draw connections
             this.drawConnections(offCtx, { x: 0, y: 0, scale: exportScale });
             
-            // Draw nodes and text
             this.nodes.forEach(node => {
                 const x = node.x * exportScale;
                 const y = node.y * exportScale;
@@ -807,11 +877,7 @@
                 if (node.shape === 'rectangle') offCtx.roundRect(x, y, w, h, 8 * exportScale);
                 else if (node.shape === 'oval') offCtx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
                 else if (node.shape === 'diamond') {
-                    offCtx.moveTo(x + w / 2, y);
-                    offCtx.lineTo(x + w, y + h / 2);
-                    offCtx.lineTo(x + w / 2, y + h);
-                    offCtx.lineTo(x, y + h / 2);
-                    offCtx.closePath();
+                    offCtx.moveTo(x + w / 2, y); offCtx.lineTo(x + w, y + h / 2); offCtx.lineTo(x + w / 2, y + h); offCtx.lineTo(x, y + h / 2); offCtx.closePath();
                 }
                 offCtx.fill();
 
@@ -822,9 +888,9 @@
                 offCtx.fillText(node.name, x + w / 2, y + h / 2);
             });
 
-            // Trigger download
             const link = document.createElement('a');
-            link.download = `website-map.png`;
+            const fileName = (this.currentDiagramName || 'untitled_diagram').replace(/ /g, '_');
+            link.download = `${fileName}.png`;
             link.href = offscreenCanvas.toDataURL('image/png');
             link.click();
             this.showToast('Exporting as PNG...');
@@ -833,7 +899,6 @@
 
         // --- Utility ---
         getNodeAt(worldX, worldY) {
-            // Find the top-most node
             for (let i = this.nodes.length - 1; i >= 0; i--) {
                 const node = this.nodes[i];
                 if (worldX >= node.x && worldX <= node.x + node.width &&
@@ -857,10 +922,10 @@
             const tanV = Math.tan(angle);
             
             let x, y;
-            if (Math.abs(dy / dx) < h / w) { // Intersects left/right
+            if (Math.abs(dy / dx) < h / w) {
                 x = centerA.x + Math.sign(dx) * w;
                 y = centerA.y + Math.sign(dx) * w * tanV;
-            } else { // Intersects top/bottom
+            } else {
                 y = centerA.y + Math.sign(dy) * h;
                 x = centerA.x + Math.sign(dy) * h / tanV;
             }
@@ -870,57 +935,140 @@
 
             return { x, y, nx, ny };
         }
+        
+        updateDiagramTitle() {
+            this.dom.diagramTitle.textContent = this.currentDiagramName || 'Untitled Diagram';
+        }
 
         // --- State & Storage ---
         saveState() {
             const state = {
-                nodes: JSON.parse(JSON.stringify(this.nodes)),
-                connections: JSON.parse(JSON.stringify(this.connections)),
+                nodes: this.nodes,
+                connections: this.connections,
                 nextNodeId: this.nextNodeId,
-                view: JSON.parse(JSON.stringify(this.view))
+                view: this.view,
+                currentDiagramName: this.currentDiagramName
             };
             this.history = this.history.slice(0, this.historyIndex + 1);
-            this.history.push(state);
+            this.history.push(JSON.parse(JSON.stringify(state)));
             this.historyIndex++;
         }
 
         loadState(state) {
-            this.nodes = JSON.parse(JSON.stringify(state.nodes));
-            this.connections = JSON.parse(JSON.stringify(state.connections));
+            this.nodes = state.nodes;
+            this.connections = state.connections;
             this.nextNodeId = state.nextNodeId;
-            this.view = JSON.parse(JSON.stringify(state.view));
+            this.view = state.view;
+            this.currentDiagramName = state.currentDiagramName;
+            this.updateDiagramTitle();
             this.renderAll();
         }
 
         undo() { if (this.historyIndex > 0) { this.historyIndex--; this.loadState(this.history[this.historyIndex]); } }
         redo() { if (this.historyIndex < this.history.length - 1) { this.historyIndex++; this.loadState(this.history[this.historyIndex]); } }
 
-        saveToStorage() {
-            const data = {
+        // --- Named Save/Load Logic ---
+        showSaveModal() {
+            this.dom.saveModal.input.value = this.currentDiagramName || '';
+            this.dom.saveModal.backdrop.classList.add('visible');
+            this.dom.saveModal.input.focus();
+
+            const confirmHandler = () => {
+                const name = this.dom.saveModal.input.value.trim();
+                if (name) {
+                    this.saveDiagramAs(name);
+                    cleanup();
+                } else {
+                    this.showToast("Please enter a name.");
+                }
+            };
+            const cancelHandler = () => cleanup();
+            const cleanup = () => {
+                this.dom.saveModal.backdrop.classList.remove('visible');
+                this.dom.saveModal.confirmBtn.removeEventListener('click', confirmHandler);
+                this.dom.saveModal.cancelBtn.removeEventListener('click', cancelHandler);
+            };
+
+            this.dom.saveModal.confirmBtn.addEventListener('click', confirmHandler, { once: true });
+            this.dom.saveModal.cancelBtn.addEventListener('click', cancelHandler, { once: true });
+        }
+        
+        saveDiagramAs(name) {
+            this.currentDiagramName = name;
+            this.updateDiagramTitle();
+            const diagrams = this.getSavedDiagrams();
+            diagrams[name] = {
                 nodes: this.nodes,
                 connections: this.connections,
                 nextNodeId: this.nextNodeId,
                 view: this.view
             };
-            localStorage.setItem('flowchartAppSave', JSON.stringify(data));
-            this.showToast('Diagram saved!');
+            localStorage.setItem('flowchartAppSaves', JSON.stringify(diagrams));
+            this.showToast(`Diagram "${name}" saved!`);
         }
 
-        loadFromStorage() {
-            const savedData = localStorage.getItem('flowchartAppSave');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                this.nodes = [];
-                data.nodes.forEach(nodeData => {
-                    this.createNode(nodeData.x, nodeData.y, nodeData.name, nodeData.shape, nodeData.color, nodeData.id);
+        showLoadModal() {
+            const diagrams = this.getSavedDiagrams();
+            const list = this.dom.loadModal.list;
+            list.innerHTML = '';
+
+            const diagramNames = Object.keys(diagrams);
+            if (diagramNames.length === 0) {
+                list.innerHTML = `<p class="text-text-secondary">No saved diagrams found.</p>`;
+            } else {
+                diagramNames.forEach(name => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center p-2 rounded-lg hover:bg-gray-700';
+                    
+                    const nameEl = document.createElement('span');
+                    nameEl.textContent = name;
+                    nameEl.className = 'cursor-pointer flex-grow';
+                    nameEl.onclick = () => {
+                        this.loadDiagram(name);
+                        this.dom.loadModal.backdrop.classList.remove('visible');
+                    };
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.innerHTML = `<svg class="w-4 h-4 text-red-400 hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.showConfirmationModal(`Delete "${name}"?`, 'This cannot be undone.', () => {
+                            this.deleteDiagram(name);
+                            this.showLoadModal(); // Refresh list
+                        });
+                    };
+                    
+                    item.appendChild(nameEl);
+                    item.appendChild(deleteBtn);
+                    list.appendChild(item);
                 });
-                this.connections = data.connections;
-                this.nextNodeId = data.nextNodeId;
-                this.view = data.view;
-                this.showToast('Loaded saved diagram.');
-                return true;
             }
-            return false;
+
+            this.dom.loadModal.backdrop.classList.add('visible');
+            this.dom.loadModal.closeBtn.onclick = () => this.dom.loadModal.backdrop.classList.remove('visible');
+        }
+
+        getSavedDiagrams() {
+            const saved = localStorage.getItem('flowchartAppSaves');
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        loadDiagram(name) {
+            const diagrams = this.getSavedDiagrams();
+            const data = diagrams[name];
+            if (data) {
+                this.clearCanvas(false);
+                this.loadState({ ...data, currentDiagramName: name });
+                this.saveState(); // Create a new history entry for the loaded state
+                this.showToast(`Loaded "${name}".`);
+            }
+        }
+
+        deleteDiagram(name) {
+            const diagrams = this.getSavedDiagrams();
+            delete diagrams[name];
+            localStorage.setItem('flowchartAppSaves', JSON.stringify(diagrams));
+            this.showToast(`Deleted "${name}".`);
         }
     }
 
