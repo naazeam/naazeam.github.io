@@ -313,13 +313,14 @@
             this.interaction = {
                 isDraggingNode: false,
                 isDrawingConnection: false,
-                isPinching: false, // New state for pinch-zoom
+                isPinching: false,
                 draggedNodeId: null,
                 connectionStartNode: null,
                 potentialDrag: false,
                 startDragMouse: { x: 0, y: 0 },
                 dragOffset: { x: 0, y: 0 },
-                initialPinchDistance: 0, // New state for pinch-zoom
+                initialPinchDistance: 0,
+                isSpacePressed: false, // <-- ADDED: Track spacebar state
             };
             
             this.lastTap = { time: 0, target: null };
@@ -345,13 +346,14 @@
             // Mouse Events
             container.addEventListener('mousedown', e => this.handleMouseDown(e));
             container.addEventListener('mousemove', e => this.handleMouseMove(e));
-            container.addEventListener('mouseup', e => this.handleMouseUp(e));
-            container.addEventListener('mouseleave', e => this.handleMouseUp(e));
+            window.addEventListener('mouseup', e => this.handleMouseUp(e)); // Attach to window to catch mouseup anywhere
+            container.addEventListener('mouseleave', e => this.handleMouseLeave(e)); // Use mouseleave for container
             container.addEventListener('wheel', e => this.handleWheel(e), { passive: false });
             container.addEventListener('dblclick', e => this.handleDoubleClick(e));
             
             // Keyboard Events
-            container.addEventListener('keydown', e => this.handleKeyDown(e));
+            document.addEventListener('keydown', e => this.handleKeyDown(e)); // Attach to document for global key handling
+            document.addEventListener('keyup', e => this.handleKeyUp(e)); // <-- ADDED: Keyup listener
             
             // Touch Events for mobile support
             container.addEventListener('touchstart', e => this.handleTouchStart(e), { passive: false });
@@ -390,7 +392,6 @@
         drawArrowhead(from, to, targetCtx = this.ctx, scale = this.view.scale) { const angle = Math.atan2(to.y - from.y, to.x - from.x); const headlen = 10 * scale; targetCtx.save(); targetCtx.strokeStyle = 'rgba(156, 163, 175, 0.8)'; targetCtx.beginPath(); targetCtx.moveTo(to.x, to.y); targetCtx.lineTo(to.x - headlen * Math.cos(angle - Math.PI / 7), to.y - headlen * Math.sin(angle - Math.PI / 7)); targetCtx.moveTo(to.x, to.y); targetCtx.lineTo(to.x - headlen * Math.cos(angle + Math.PI / 7), to.y - headlen * Math.sin(angle + Math.PI / 7)); targetCtx.stroke(); targetCtx.restore(); }
         drawTempConnection() { const startNode = this.interaction.connectionStartNode; const startPoint = this.getEdgePoint(startNode, { x: this.mouse.worldX, y: this.mouse.worldY, width: 0, height: 0 }); const startScreen = this.worldToScreen(startPoint.x, startPoint.y); this.ctx.save(); this.ctx.strokeStyle = 'var(--accent)'; this.ctx.lineWidth = 3 * this.view.scale; this.ctx.setLineDash([5 * this.view.scale, 5 * this.view.scale]); this.ctx.beginPath(); this.ctx.moveTo(startScreen.x, startScreen.y); this.ctx.lineTo(this.mouse.x, this.mouse.y); this.ctx.stroke(); this.ctx.restore(); }
         
-        // --- THIS IS THE UPDATED FUNCTION ---
         renderNodes() {
             this.dom.nodesContainer.innerHTML = '';
             let connectionTargetId = null;
@@ -424,12 +425,11 @@
                 `;
                 this.dom.nodesContainer.appendChild(nodeEl);
                 
-                // --- FIX START: Prevent mouseup events on buttons from bubbling to the container ---
                 const stopMouseEvent = (e) => e.stopPropagation();
 
                 const editBtn = nodeEl.querySelector('.edit-btn');
                 editBtn.addEventListener('mousedown', stopMouseEvent);
-                editBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                editBtn.addEventListener('mouseup', stopMouseEvent);
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.makeEditable(nodeEl.querySelector('.node-name'), node.id);
@@ -437,7 +437,7 @@
 
                 const deleteBtn = nodeEl.querySelector('.delete-btn');
                 deleteBtn.addEventListener('mousedown', stopMouseEvent);
-                deleteBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                deleteBtn.addEventListener('mouseup', stopMouseEvent);
                 deleteBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.deleteNode(node.id);
@@ -445,7 +445,7 @@
 
                 const duplicateBtn = nodeEl.querySelector('.duplicate-btn');
                 duplicateBtn.addEventListener('mousedown', stopMouseEvent);
-                duplicateBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                duplicateBtn.addEventListener('mouseup', stopMouseEvent);
                 duplicateBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.duplicateNode(node.id);
@@ -453,7 +453,7 @@
 
                 const colorBtn = nodeEl.querySelector('.color-btn');
                 colorBtn.addEventListener('mousedown', stopMouseEvent);
-                colorBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                colorBtn.addEventListener('mouseup', stopMouseEvent);
                 colorBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.showColorPalette(node.id, nodeEl);
@@ -461,32 +461,126 @@
 
                 const connectorBtn = nodeEl.querySelector('.connector-btn')
                 connectorBtn.addEventListener('mousedown', stopMouseEvent);
-                connectorBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                connectorBtn.addEventListener('mouseup', stopMouseEvent);
                 connectorBtn.addEventListener('mousedown', (e) => {
                     e.stopPropagation();
                     this.startConnection(node.id);
                 });
-                // --- FIX END ---
             });
         }
         
-        // --- Interaction Handlers (TOUCH LOGIC HEAVILY UPDATED) ---
+        // --- Interaction Handlers ---
         handleTouchStart(e) { e.preventDefault(); if (e.touches.length === 2) { this.interaction.isPinching = true; this.interaction.isPanning = false; this.interaction.potentialDrag = false; const t1 = e.touches[0]; const t2 = e.touches[1]; this.interaction.initialPinchDistance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY); } else if (e.touches.length === 1) { const touch = e.touches[0]; const targetNodeEl = touch.target.closest('.node'); const now = new Date().getTime(); const timesince = now - (this.lastTap?.time || 0); if (targetNodeEl && (timesince < 400) && (this.lastTap.target === targetNodeEl)) { const nodeId = parseInt(targetNodeEl.id.split('-')[1]); this.makeEditable(targetNodeEl.querySelector('.node-name'), nodeId); this.lastTap = { time: 0, target: null }; return; } if (!targetNodeEl && (timesince < 400) && (this.lastTap.target === null)) { this.updateMousePos(touch); this.createNode(this.mouse.worldX - 80, this.mouse.worldY - 48, 'New Page'); this.saveState(); this.renderAll(); this.lastTap = { time: 0, target: null }; return; } this.lastTap = { time: now, target: targetNodeEl }; this.handleMouseDown(touch); } }
         handleTouchMove(e) { e.preventDefault(); if (this.interaction.isPinching && e.touches.length === 2) { const t1 = e.touches[0]; const t2 = e.touches[1]; const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY); const scaleFactor = currentDist / this.interaction.initialPinchDistance; this.interaction.initialPinchDistance = currentDist; const oldScale = this.view.scale; this.view.scale *= scaleFactor; this.view.scale = Math.max(0.1, Math.min(this.view.scale, 5)); const rect = this.dom.diagramContainer.getBoundingClientRect(); const pinchCenterX = (t1.clientX + t2.clientX) / 2 - rect.left; const pinchCenterY = (t1.clientY + t2.clientY) / 2 - rect.top; this.view.x = pinchCenterX - (pinchCenterX - this.view.x) * (this.view.scale / oldScale); this.view.y = pinchCenterY - (pinchCenterY - this.view.y) * (this.view.scale / oldScale); this.renderAll(); } else if (!this.interaction.isPinching && e.touches.length === 1) { this.handleMouseMove(e.touches[0]); } }
         handleTouchEnd(e) { if (this.interaction.isPinching) { this.interaction.isPinching = false; } if (!this.interaction.isDrawingConnection) { this.handleMouseUp(e.changedTouches[0]); } }
-        handleMouseDown(e) { this.updateMousePos(e); if (e.code === 'Space' || e.button === 1) { this.view.isPanning = true; this.dom.diagramContainer.classList.add('panning'); this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y }; e.preventDefault(); return; } const nodeEl = e.target.closest('.node'); if (nodeEl) { const nodeId = parseInt(nodeEl.id.split('-')[1]); this.interaction.potentialDrag = true; this.interaction.draggedNodeId = nodeId; this.setSelectedNode(nodeId); const node = this.nodes.find(n => n.id === nodeId); this.interaction.startDragMouse = { x: this.mouse.worldX, y: this.mouse.worldY }; this.interaction.dragOffset = { x: this.mouse.worldX - node.x, y: this.mouse.worldY - node.y }; } else { this.setSelectedNode(null); this.view.isPanning = true; this.dom.diagramContainer.classList.add('panning'); this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y }; } }
+        
+        handleMouseDown(e) {
+            this.updateMousePos(e);
+            // --- MODIFIED: Check for spacebar press OR middle mouse button to start panning ---
+            if (this.interaction.isSpacePressed || e.button === 1) {
+                this.view.isPanning = true;
+                this.dom.diagramContainer.classList.add('panning');
+                this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y };
+                e.preventDefault();
+                return;
+            }
+            const nodeEl = e.target.closest('.node');
+            if (nodeEl) {
+                const nodeId = parseInt(nodeEl.id.split('-')[1]);
+                this.interaction.potentialDrag = true;
+                this.interaction.draggedNodeId = nodeId;
+                this.setSelectedNode(nodeId);
+                const node = this.nodes.find(n => n.id === nodeId);
+                this.interaction.startDragMouse = { x: this.mouse.worldX, y: this.mouse.worldY };
+                this.interaction.dragOffset = { x: this.mouse.worldX - node.x, y: this.mouse.worldY - node.y };
+            } else {
+                this.setSelectedNode(null);
+                // Pan with left click on background
+                this.view.isPanning = true;
+                this.dom.diagramContainer.classList.add('panning');
+                this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y };
+            }
+        }
+
         handleMouseMove(e) { this.updateMousePos(e); if (this.view.isPanning) { this.view.x = this.mouse.x - this.view.startPan.x; this.view.y = this.mouse.y - this.view.startPan.y; this.renderAll(); return; } if (this.interaction.potentialDrag && !this.interaction.isDraggingNode) { const movedDist = Math.hypot(this.mouse.worldX - this.interaction.startDragMouse.x, this.mouse.worldY - this.interaction.startDragMouse.y); if (movedDist * this.view.scale > 5) { this.interaction.isDraggingNode = true; document.getElementById(`node-${this.interaction.draggedNodeId}`)?.classList.add('dragging'); } } if (this.interaction.isDraggingNode) { const node = this.nodes.find(n => n.id === this.interaction.draggedNodeId); if (node) { node.x = this.mouse.worldX - this.interaction.dragOffset.x; node.y = this.mouse.worldY - this.interaction.dragOffset.y; this.renderAll(); } } else if (this.interaction.isDrawingConnection) { this.renderAll(); } }
-        handleMouseUp(e) { if (this.interaction.isDrawingConnection) { const endNode = this.getNodeAt(this.mouse.worldX, this.mouse.worldY); if (endNode && endNode.id !== this.interaction.connectionStartNode.id) { const existingConnection = this.connections.find(c => (c.from === this.interaction.connectionStartNode.id && c.to === endNode.id)); if (!existingConnection) { this.connections.push({ from: this.interaction.connectionStartNode.id, to: endNode.id }); this.saveState(); } } } if (this.interaction.isDraggingNode) { document.getElementById(`node-${this.interaction.draggedNodeId}`)?.classList.remove('dragging'); this.saveState(); } this.interaction.isDraggingNode = false; this.interaction.isDrawingConnection = false; this.interaction.potentialDrag = false; this.interaction.draggedNodeId = null; this.interaction.connectionStartNode = null; this.view.isPanning = false; this.dom.diagramContainer.classList.remove('panning'); this.renderAll(); }
+        
+        handleMouseUp(e) {
+            if (this.interaction.isDrawingConnection) {
+                const endNode = this.getNodeAt(this.mouse.worldX, this.mouse.worldY);
+                if (endNode && endNode.id !== this.interaction.connectionStartNode.id) {
+                    const existingConnection = this.connections.find(c => (c.from === this.interaction.connectionStartNode.id && c.to === endNode.id));
+                    if (!existingConnection) {
+                        this.connections.push({ from: this.interaction.connectionStartNode.id, to: endNode.id });
+                        this.saveState();
+                    }
+                }
+            }
+            if (this.interaction.isDraggingNode) {
+                document.getElementById(`node-${this.interaction.draggedNodeId}`)?.classList.remove('dragging');
+                this.saveState();
+            }
+            this.interaction.isDraggingNode = false;
+            this.interaction.isDrawingConnection = false;
+            this.interaction.potentialDrag = false;
+            this.interaction.draggedNodeId = null;
+            this.interaction.connectionStartNode = null;
+            this.view.isPanning = false;
+            // --- MODIFIED: Only remove panning class if space isn't held ---
+            if (!this.interaction.isSpacePressed) {
+                this.dom.diagramContainer.classList.remove('panning');
+            }
+            this.renderAll();
+        }
+
+        handleMouseLeave(e) {
+            // Stop panning if mouse leaves the container
+            if (this.view.isPanning) {
+                this.view.isPanning = false;
+                if (!this.interaction.isSpacePressed) {
+                     this.dom.diagramContainer.classList.remove('panning');
+                }
+                this.renderAll();
+            }
+        }
+
         handleWheel(e) { e.preventDefault(); const scaleAmount = 1.1; const oldScale = this.view.scale; if (e.deltaY < 0) { this.view.scale *= scaleAmount; } else { this.view.scale /= scaleAmount; } this.view.scale = Math.max(0.1, Math.min(this.view.scale, 5)); this.view.x = this.mouse.x - (this.mouse.x - this.view.x) * (this.view.scale / oldScale); this.view.y = this.mouse.y - (this.mouse.y - this.view.y) * (this.view.scale / oldScale); this.renderAll(); }
         handleDoubleClick(e) { this.updateMousePos(e); const nodeEl = e.target.closest('.node'); if (nodeEl) { const nodeId = parseInt(nodeEl.id.split('-')[1]); this.makeEditable(nodeEl.querySelector('.node-name'), nodeId); } else { this.createNode(this.mouse.worldX - 80, this.mouse.worldY - 48, 'New Page'); this.saveState(); this.renderAll(); } }
-        handleKeyDown(e) { if (document.activeElement.isContentEditable) return; if (e.code === 'Space') { e.preventDefault(); if (!this.view.isPanning) { this.view.isPanning = true; this.dom.diagramContainer.classList.add('panning'); this.updateMousePos(e); this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y }; } return; } const isMod = e.ctrlKey || e.metaKey; if (isMod && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? this.redo() : this.undo(); } else if (e.key === 'Delete' || e.key === 'Backspace') { if(this.selectedNodeId !== null) this.deleteNode(this.selectedNodeId); } }
+        
+        // --- MODIFIED: Reworked key handling for spacebar panning ---
+        handleKeyDown(e) {
+            if (document.activeElement.isContentEditable) return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                this.interaction.isSpacePressed = true;
+                this.dom.diagramContainer.classList.add('panning');
+                return;
+            }
+            const isMod = e.ctrlKey || e.metaKey;
+            if (isMod && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                e.shiftKey ? this.redo() : this.undo();
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                if(this.selectedNodeId !== null) this.deleteNode(this.selectedNodeId);
+            }
+        }
+
+        // --- ADDED: Handle spacebar release ---
+        handleKeyUp(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                this.interaction.isSpacePressed = false;
+                // Only remove class if a mouse-drag-pan isn't also happening
+                if (!this.view.isPanning) {
+                    this.dom.diagramContainer.classList.remove('panning');
+                }
+            }
+        }
         
         // --- UI & UX Helpers ---
         makeEditable(element, nodeId) {
             element.contentEditable = true;
             element.focus();
             
-            // This is the modern, correct way to select text content.
             const selection = window.getSelection();
             const range = document.createRange();
             range.selectNodeContents(element);
@@ -497,9 +591,9 @@
                 element.contentEditable = false;
                 const node = this.nodes.find(n => n.id === nodeId);
                 if (node && node.name !== element.textContent.trim()) {
-                    node.name = element.textContent.trim() || 'Untitled'; // Prevent empty names
+                    node.name = element.textContent.trim() || 'Untitled';
                     this.saveState();
-                    this.renderAll(); // Re-render to show updated name
+                    this.renderAll();
                 }
                 element.removeEventListener('blur', onBlur);
                 element.removeEventListener('keydown', onKeydown);
@@ -510,7 +604,7 @@
                     e.preventDefault();
                     element.blur();
                 } else if (e.key === 'Escape') {
-                    element.textContent = this.nodes.find(n => n.id === nodeId).name; // Restore original text
+                    element.textContent = this.nodes.find(n => n.id === nodeId).name;
                     element.blur();
                 }
             };
