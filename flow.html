@@ -253,7 +253,7 @@
         <div class="modal">
             <h3 class="text-lg font-bold mb-4">Load Diagram</h3>
             <div id="load-diagram-list" class="space-y-2">
-                </div>
+            </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button id="load-modal-close-btn" class="btn btn-secondary">Close</button>
             </div>
@@ -381,8 +381,7 @@
             return { x: x * this.view.scale + this.view.x, y: y * this.view.scale + this.view.y };
         }
         
-        // --- Rendering (No changes needed in rendering logic) ---
-        // ... [ All rendering functions remain the same as the original ]
+        // --- Rendering ---
         resizeCanvas() { this.dom.canvas.width = this.dom.diagramContainer.clientWidth; this.dom.canvas.height = this.dom.diagramContainer.clientHeight; this.renderAll(); }
         renderAll() { requestAnimationFrame(() => { this.clearCanvasCtx(); this.drawGrid(); this.drawConnections(); if (this.interaction.isDrawingConnection) this.drawTempConnection(); this.renderNodes(); }); }
         clearCanvasCtx() { this.ctx.save(); this.ctx.setTransform(1, 0, 0, 1, 0, 0); this.ctx.clearRect(0, 0, this.dom.canvas.width, this.dom.canvas.height); this.ctx.restore(); }
@@ -390,7 +389,86 @@
         drawConnections(targetCtx = this.ctx, view = this.view) { targetCtx.strokeStyle = 'rgba(156, 163, 175, 0.6)'; targetCtx.lineWidth = 2.5 * view.scale; this.connections.forEach(conn => { const fromNode = this.nodes.find(n => n.id === conn.from); const toNode = this.nodes.find(n => n.id === conn.to); if (!fromNode || !toNode) return; const fromPoint = this.getEdgePoint(fromNode, toNode); const toPoint = this.getEdgePoint(toNode, fromNode); const fromScreen = { x: fromPoint.x * view.scale + view.x, y: fromPoint.y * view.scale + view.y }; const toScreen = { x: toPoint.x * view.scale + view.x, y: toPoint.y * view.scale + view.y }; const dx = toPoint.x - fromPoint.x; const dy = toPoint.y - fromPoint.y; const dist = Math.hypot(dx, dy); const cpOffset = Math.max(50, dist * 0.5); const cp1 = { x: fromPoint.x + (fromPoint.nx * cpOffset), y: fromPoint.y + (fromPoint.ny * cpOffset) }; const cp2 = { x: toPoint.x + (toPoint.nx * cpOffset), y: toPoint.y + (toPoint.ny * cpOffset) }; const cp1Screen = { x: cp1.x * view.scale + view.x, y: cp1.y * view.scale + view.y }; const cp2Screen = { x: cp2.x * view.scale + view.x, y: cp2.y * view.scale + view.y }; targetCtx.beginPath(); targetCtx.moveTo(fromScreen.x, fromScreen.y); targetCtx.bezierCurveTo(cp1Screen.x, cp1Screen.y, cp2Screen.x, cp2Screen.y, toScreen.x, toScreen.y); targetCtx.stroke(); this.drawArrowhead(cp2Screen, toScreen, targetCtx, view.scale); }); }
         drawArrowhead(from, to, targetCtx = this.ctx, scale = this.view.scale) { const angle = Math.atan2(to.y - from.y, to.x - from.x); const headlen = 10 * scale; targetCtx.save(); targetCtx.strokeStyle = 'rgba(156, 163, 175, 0.8)'; targetCtx.beginPath(); targetCtx.moveTo(to.x, to.y); targetCtx.lineTo(to.x - headlen * Math.cos(angle - Math.PI / 7), to.y - headlen * Math.sin(angle - Math.PI / 7)); targetCtx.moveTo(to.x, to.y); targetCtx.lineTo(to.x - headlen * Math.cos(angle + Math.PI / 7), to.y - headlen * Math.sin(angle + Math.PI / 7)); targetCtx.stroke(); targetCtx.restore(); }
         drawTempConnection() { const startNode = this.interaction.connectionStartNode; const startPoint = this.getEdgePoint(startNode, { x: this.mouse.worldX, y: this.mouse.worldY, width: 0, height: 0 }); const startScreen = this.worldToScreen(startPoint.x, startPoint.y); this.ctx.save(); this.ctx.strokeStyle = 'var(--accent)'; this.ctx.lineWidth = 3 * this.view.scale; this.ctx.setLineDash([5 * this.view.scale, 5 * this.view.scale]); this.ctx.beginPath(); this.ctx.moveTo(startScreen.x, startScreen.y); this.ctx.lineTo(this.mouse.x, this.mouse.y); this.ctx.stroke(); this.ctx.restore(); }
-        renderNodes() { this.dom.nodesContainer.innerHTML = ''; let connectionTargetId = null; if (this.interaction.isDrawingConnection) { const hoverNode = this.getNodeAt(this.mouse.worldX, this.mouse.worldY); if (hoverNode && hoverNode.id !== this.interaction.connectionStartNode.id) { connectionTargetId = hoverNode.id; } } this.nodes.forEach(node => { const screenPos = this.worldToScreen(node.x, node.y); const nodeEl = document.createElement('div'); nodeEl.id = `node-${node.id}`; nodeEl.className = `node ${node.id === this.selectedNodeId ? 'selected' : ''} ${node.id === connectionTargetId ? 'connection-target' : ''}`; nodeEl.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px) scale(${this.view.scale})`; nodeEl.style.width = `${node.width}px`; nodeEl.style.height = `${node.height}px`; let shapeSvg = ''; if (node.shape === 'rectangle') shapeSvg = `<rect x="1" y="1" width="${node.width-2}" height="${node.height-2}" rx="8" fill="${node.color}"></rect>`; else if (node.shape === 'oval') shapeSvg = `<ellipse cx="${node.width/2}" cy="${node.height/2}" rx="${node.width/2-1}" ry="${node.height/2-1}" fill="${node.color}"></ellipse>`; else if (node.shape === 'diamond') shapeSvg = `<path d="M${node.width/2} 1 L${node.width-1} ${node.height/2} L${node.width/2} ${node.height-1} L1 ${node.height/2} Z" fill="${node.color}"></path>`; nodeEl.innerHTML = ` <svg class="node-svg" viewBox="0 0 ${node.width} ${node.height}">${shapeSvg}</svg> <div class="node-name">${node.name}</div> <div class="icon-btn edit-btn" title="Edit Text"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.532 3.464z"></path></svg></div> <div class="icon-btn delete-btn" title="Delete"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></div> <div class="icon-btn duplicate-btn" title="Duplicate"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div> <div class="icon-btn color-btn" title="Change Color"><svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69z"></path></svg></div> <div class="icon-btn connector-btn" title="Connect"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div> `; this.dom.nodesContainer.appendChild(nodeEl); nodeEl.querySelector('.edit-btn').addEventListener('click', (e) => { e.stopPropagation(); this.makeEditable(nodeEl.querySelector('.node-name'), node.id); }); nodeEl.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); this.deleteNode(node.id); }); nodeEl.querySelector('.duplicate-btn').addEventListener('click', (e) => { e.stopPropagation(); this.duplicateNode(node.id); }); nodeEl.querySelector('.color-btn').addEventListener('click', (e) => { e.stopPropagation(); this.showColorPalette(node.id, nodeEl); }); nodeEl.querySelector('.connector-btn').addEventListener('mousedown', (e) => { e.stopPropagation(); this.startConnection(node.id); }); }); }
+        
+        // --- THIS IS THE UPDATED FUNCTION ---
+        renderNodes() {
+            this.dom.nodesContainer.innerHTML = '';
+            let connectionTargetId = null;
+            if (this.interaction.isDrawingConnection) {
+                const hoverNode = this.getNodeAt(this.mouse.worldX, this.mouse.worldY);
+                if (hoverNode && hoverNode.id !== this.interaction.connectionStartNode.id) {
+                    connectionTargetId = hoverNode.id;
+                }
+            }
+            this.nodes.forEach(node => {
+                const screenPos = this.worldToScreen(node.x, node.y);
+                const nodeEl = document.createElement('div');
+                nodeEl.id = `node-${node.id}`;
+                nodeEl.className = `node ${node.id === this.selectedNodeId ? 'selected' : ''} ${node.id === connectionTargetId ? 'connection-target' : ''}`;
+                nodeEl.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px) scale(${this.view.scale})`;
+                nodeEl.style.width = `${node.width}px`;
+                nodeEl.style.height = `${node.height}px`;
+                let shapeSvg = '';
+                if (node.shape === 'rectangle') shapeSvg = `<rect x="1" y="1" width="${node.width-2}" height="${node.height-2}" rx="8" fill="${node.color}"></rect>`;
+                else if (node.shape === 'oval') shapeSvg = `<ellipse cx="${node.width/2}" cy="${node.height/2}" rx="${node.width/2-1}" ry="${node.height/2-1}" fill="${node.color}"></ellipse>`;
+                else if (node.shape === 'diamond') shapeSvg = `<path d="M${node.width/2} 1 L${node.width-1} ${node.height/2} L${node.width/2} ${node.height-1} L1 ${node.height/2} Z" fill="${node.color}"></path>`;
+                
+                nodeEl.innerHTML = `
+                    <svg class="node-svg" viewBox="0 0 ${node.width} ${node.height}">${shapeSvg}</svg>
+                    <div class="node-name">${node.name}</div>
+                    <div class="icon-btn edit-btn" title="Edit Text"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.532 3.464z"></path></svg></div>
+                    <div class="icon-btn delete-btn" title="Delete"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></div>
+                    <div class="icon-btn duplicate-btn" title="Duplicate"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>
+                    <div class="icon-btn color-btn" title="Change Color"><svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69z"></path></svg></div>
+                    <div class="icon-btn connector-btn" title="Connect"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+                `;
+                this.dom.nodesContainer.appendChild(nodeEl);
+                
+                // --- FIX START: Prevent mouseup events on buttons from bubbling to the container ---
+                const stopMouseEvent = (e) => e.stopPropagation();
+
+                const editBtn = nodeEl.querySelector('.edit-btn');
+                editBtn.addEventListener('mousedown', stopMouseEvent);
+                editBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.makeEditable(nodeEl.querySelector('.node-name'), node.id);
+                });
+
+                const deleteBtn = nodeEl.querySelector('.delete-btn');
+                deleteBtn.addEventListener('mousedown', stopMouseEvent);
+                deleteBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.deleteNode(node.id);
+                });
+
+                const duplicateBtn = nodeEl.querySelector('.duplicate-btn');
+                duplicateBtn.addEventListener('mousedown', stopMouseEvent);
+                duplicateBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                duplicateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.duplicateNode(node.id);
+                });
+
+                const colorBtn = nodeEl.querySelector('.color-btn');
+                colorBtn.addEventListener('mousedown', stopMouseEvent);
+                colorBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                colorBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.showColorPalette(node.id, nodeEl);
+                });
+
+                const connectorBtn = nodeEl.querySelector('.connector-btn')
+                connectorBtn.addEventListener('mousedown', stopMouseEvent);
+                connectorBtn.addEventListener('mouseup', stopMouseEvent); // <-- ADDED THIS
+                connectorBtn.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                    this.startConnection(node.id);
+                });
+                // --- FIX END ---
+            });
+        }
         
         // --- Interaction Handlers (TOUCH LOGIC HEAVILY UPDATED) ---
         handleTouchStart(e) { e.preventDefault(); if (e.touches.length === 2) { this.interaction.isPinching = true; this.interaction.isPanning = false; this.interaction.potentialDrag = false; const t1 = e.touches[0]; const t2 = e.touches[1]; this.interaction.initialPinchDistance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY); } else if (e.touches.length === 1) { const touch = e.touches[0]; const targetNodeEl = touch.target.closest('.node'); const now = new Date().getTime(); const timesince = now - (this.lastTap?.time || 0); if (targetNodeEl && (timesince < 400) && (this.lastTap.target === targetNodeEl)) { const nodeId = parseInt(targetNodeEl.id.split('-')[1]); this.makeEditable(targetNodeEl.querySelector('.node-name'), nodeId); this.lastTap = { time: 0, target: null }; return; } if (!targetNodeEl && (timesince < 400) && (this.lastTap.target === null)) { this.updateMousePos(touch); this.createNode(this.mouse.worldX - 80, this.mouse.worldY - 48, 'New Page'); this.saveState(); this.renderAll(); this.lastTap = { time: 0, target: null }; return; } this.lastTap = { time: now, target: targetNodeEl }; this.handleMouseDown(touch); } }
@@ -404,21 +482,16 @@
         handleKeyDown(e) { if (document.activeElement.isContentEditable) return; if (e.code === 'Space') { e.preventDefault(); if (!this.view.isPanning) { this.view.isPanning = true; this.dom.diagramContainer.classList.add('panning'); this.updateMousePos(e); this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y }; } return; } const isMod = e.ctrlKey || e.metaKey; if (isMod && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? this.redo() : this.undo(); } else if (e.key === 'Delete' || e.key === 'Backspace') { if(this.selectedNodeId !== null) this.deleteNode(this.selectedNodeId); } }
         
         // --- UI & UX Helpers ---
-        // ...
-        // THIS IS THE ONLY FUNCTION THAT WAS CHANGED
         makeEditable(element, nodeId) {
             element.contentEditable = true;
             element.focus();
             
-            // --- FIX START ---
-            // The old `document.execCommand('selectAll', ...)` is deprecated and broken.
             // This is the modern, correct way to select text content.
             const selection = window.getSelection();
             const range = document.createRange();
             range.selectNodeContents(element);
             selection.removeAllRanges();
             selection.addRange(range);
-            // --- FIX END ---
             
             const onBlur = () => {
                 element.contentEditable = false;
@@ -446,7 +519,6 @@
             element.addEventListener('keydown', onKeydown);
         }
 
-        // --- All remaining functions are unchanged ---
         createNode(x, y, name, shape = 'rectangle', color, id) { const newNode = { id: id !== undefined ? id : this.nextNodeId++, name: name || `Page ${this.nextNodeId}`, shape, x, y, width: 160, height: 96, color: color || this.SOFT_COLORS[Math.floor(Math.random() * this.SOFT_COLORS.length)] }; if (id === undefined && newNode.id >= this.nextNodeId) { this.nextNodeId = newNode.id + 1; } this.nodes.push(newNode); this.setSelectedNode(newNode.id); return newNode; }
         addNodeInCenter() { const rect = this.dom.diagramContainer.getBoundingClientRect(); const centerX = (rect.width / 2 - this.view.x) / this.view.scale; const centerY = (rect.height / 2 - this.view.y) / this.view.scale; this.createNode(centerX - 80, centerY - 48, 'New Page'); this.saveState(); this.renderAll(); }
         deleteNode(nodeId) { this.nodes = this.nodes.filter(n => n.id !== nodeId); this.connections = this.connections.filter(c => c.from !== nodeId && c.to !== nodeId); if (this.selectedNodeId === nodeId) this.selectedNodeId = null; this.saveState(); this.renderAll(); }
