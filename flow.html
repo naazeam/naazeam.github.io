@@ -2,212 +2,447 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website Map Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro Website Map Visualizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #111827;
+            --bg-secondary: #1F2937;
+            --bg-tertiary: #374151;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --accent: #2DD4BF;
+            --accent-hover: #14B8A6;
+            --border-color: #4B5563;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --select-glow: #3B82F6;
+        }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1a202c;
-            color: #E2E8F0;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             overscroll-behavior: none;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none;
         }
-        [contenteditable="true"] { outline: 2px solid #38B2AC; border-radius: 4px; padding: 2px; }
+        #diagram-container {
+            cursor: grab;
+        }
+        #diagram-container.panning {
+            cursor: grabbing;
+        }
         .node {
             position: absolute;
+            transform-origin: top left;
             z-index: 10;
             cursor: grab;
             touch-action: none;
-            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
         }
         .node.selected {
-            box-shadow: 0 0 0 3px #4FD1C5;
+            box-shadow: 0 0 0 3px var(--select-glow), 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+            z-index: 11;
         }
-        .node:hover { transform: translateY(-2px); }
-        .node.dragging { cursor: grabbing; z-index: 20; transform: scale(1.05); }
-        .node-svg { width: 100%; height: 100%; }
-        .node-svg-shape { stroke: #4A5568; stroke-width: 2px; }
-        .node-name { position: absolute; width: 85%; text-align: center; color: white; font-weight: 500; pointer-events: none; }
-        .connector {
-            position: absolute; width: 16px; height: 16px;
-            background-color: #4A5568; border: 2px solid #2D3748;
-            border-radius: 50%; cursor: crosshair; z-index: 15;
-            transition: background-color 0.2s ease-in-out;
+        .node.dragging {
+            cursor: grabbing;
+            z-index: 20;
         }
-        .connector:hover { background-color: #4FD1C5; }
-        .connector.top { top: -8px; left: 50%; transform: translateX(-50%); }
-        .connector.bottom { bottom: -8px; left: 50%; transform: translateX(-50%); }
-        #main-canvas { position: absolute; top: 0; left: 0; z-index: 1; }
+        .node.connection-target {
+            box-shadow: 0 0 0 3px var(--accent), 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+        }
+        .node-svg {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .node-name {
+            position: absolute;
+            width: 85%;
+            text-align: center;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            pointer-events: none;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .node-name[contenteditable="true"] {
+            pointer-events: all;
+            user-select: text;
+            background-color: rgba(0,0,0,0.3);
+            outline: 2px solid var(--accent);
+        }
+        #main-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .btn {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 3px 0 var(--shadow-color), 0 1px 2px -1px var(--shadow-color);
+        }
+        .btn-primary { background-color: var(--accent); color: var(--bg-primary); }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-secondary { background-color: var(--bg-tertiary); color: var(--text-primary); }
+        .btn-secondary:hover { background-color: var(--border-color); }
+        .btn-danger { background-color: #EF4444; color: white; }
+        .btn-danger:hover { background-color: #DC2626; }
+        .icon-btn {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px; height: 28px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s, visibility 0.2s;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .icon-btn:hover { background-color: rgba(0,0,0,0.6); }
+        .node.selected .icon-btn { opacity: 1; visibility: visible; }
+        .connector-btn { top: 50%; right: -14px; transform: translateY(-50%); }
+        .delete-btn { top: -14px; right: -14px; }
+        .duplicate-btn { bottom: -14px; right: -14px; }
+        .color-btn { bottom: -14px; left: -14px; }
         #color-palette {
-            position: fixed; z-index: 40; background-color: #2D3748;
-            border: 1px solid #4A5568; border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-            padding: 8px; display: flex; gap: 8px;
+            position: absolute;
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color);
+            z-index: 100;
         }
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        #sidebar.collapsed { transform: translateX(-100%); }
-        .library-item { cursor: grab; }
-        .icon-btn { cursor: pointer; color: #A0AEC0; transition: color 0.2s ease-in-out; }
-        .icon-btn:hover { color: #E2E8F0; }
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: bottom 0.5s ease-in-out;
+            z-index: 1000;
+        }
+        #toast.show {
+            bottom: 20px;
+        }
+        /* Confirmation Modal */
+        #modal-backdrop {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 900;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #modal-backdrop.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 901;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+        #modal-backdrop.visible #modal {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="overflow-hidden">
-
-    <!-- Sidebar -->
-    <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-800/70 backdrop-blur-md z-40 p-4 shadow-2xl">
-        <h2 class="text-lg font-bold mb-4">Element Library</h2>
-        <div class="space-y-3">
-            <div class="library-item bg-gray-700 p-3 rounded-lg flex items-center gap-3" draggable="true" data-shape="rectangle" data-name="Page">
-                <svg viewBox="0 0 160 96" class="w-10 h-8"><rect x="1" y="1" width="158" height="94" rx="8" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"></rect></svg>
-                <span>Rectangle</span>
-            </div>
-             <div class="library-item bg-gray-700 p-3 rounded-lg flex items-center gap-3" draggable="true" data-shape="oval" data-name="Start/End">
-                <svg viewBox="0 0 160 96" class="w-10 h-8"><ellipse cx="80" cy="48" rx="79" ry="47" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"></ellipse></svg>
-                <span>Oval</span>
-            </div>
-             <div class="library-item bg-gray-700 p-3 rounded-lg flex items-center gap-3" draggable="true" data-shape="diamond" data-name="Decision">
-                <svg viewBox="0 0 160 96" class="w-10 h-8"><path d="M80 1 L159 48 L80 95 L1 48 Z" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"></path></svg>
-                <span>Diamond</span>
-            </div>
-        </div>
-    </div>
     
     <!-- Main Content -->
-    <div id="main-content" class="relative w-full h-screen transition-all duration-300 ease-in-out">
+    <div id="main-content" class="relative w-full h-screen">
         <!-- Toolbar -->
-        <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-30">
-             <div class="flex items-center gap-4">
-                 <button id="sidebar-toggle-btn" class="p-2 rounded-md hover:bg-gray-700 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 id="main-title" class="text-xl font-bold">Website Map</h1>
-                        <svg id="edit-title-btn" class="w-4 h-4 icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 1 1 3.536 3.536L6.5 21.036H3v-3.536L16.532 3.464z"></path></svg>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
-                <button id="save-btn" class="bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-2 px-4 rounded-lg shadow-md transition-colors">Save as PNG</button>
-                <button id="add-node-btn" class="bg-teal-700 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors">Add Page</button>
+        <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-30 pointer-events-none">
+            <h1 class="text-lg md:text-xl font-bold pointer-events-auto">Website Map</h1>
+            <div class="flex items-center gap-2 md:gap-3 pointer-events-auto">
+                <button id="clear-btn" class="btn btn-secondary">Clear</button>
+                <button id="export-png-btn" class="btn btn-secondary">Export PNG</button>
+                <button id="save-btn" class="btn btn-secondary">Save</button>
+                <button id="add-node-btn" class="btn btn-primary">Add Page</button>
             </div>
         </div>
 
-        <!-- Node and Canvas Container -->
+        <!-- Diagram Container -->
         <div id="diagram-container" class="w-full h-full" tabindex="0">
             <canvas id="main-canvas"></canvas>
             <div id="nodes-container"></div>
         </div>
     </div>
 
+    <!-- UI Elements -->
+    <div id="toast"></div>
+    <div id="modal-backdrop">
+        <div id="modal">
+            <h3 id="modal-title" class="text-lg font-bold mb-2">Are you sure?</h3>
+            <p id="modal-text" class="text-text-secondary mb-6">This action cannot be undone.</p>
+            <div class="flex justify-end gap-3">
+                <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button id="modal-confirm-btn" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- DOM Elements ---
-        const diagramContainer = document.getElementById('diagram-container');
-        const canvas = document.getElementById('main-canvas');
-        const ctx = canvas.getContext('2d');
-        const nodesContainer = document.getElementById('nodes-container');
-        const addNodeBtn = document.getElementById('add-node-btn');
-        const saveBtn = document.getElementById('save-btn');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-        const mainTitle = document.getElementById('main-title');
-        const editTitleBtn = document.getElementById('edit-title-btn');
-
-        // --- State Management ---
-        let nodes = [];
-        let connections = [];
-        let history = [];
-        let historyIndex = -1;
-        let nextNodeId = 0;
-        let isDraggingNode = false, isDrawingConnection = false, isDragCopying = false;
-        let draggedNodeId = null, selectedNodeId = null, connectionStartNode = null;
-        let clipboard = null;
-        let mouse = { x: 0, y: 0 }, offset = { x: 0, y: 0 };
-        let isSidebarOpen = true;
-        const VIBRANT_COLORS = ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899'];
-
-        // --- History (Undo/Redo) ---
-        const saveState = () => {
-            const state = {
-                nodes: JSON.parse(JSON.stringify(nodes)),
-                connections: JSON.parse(JSON.stringify(connections)),
-                nextNodeId: nextNodeId
+    class FlowchartApp {
+        constructor() {
+            // --- DOM Elements ---
+            this.dom = {
+                diagramContainer: document.getElementById('diagram-container'),
+                canvas: document.getElementById('main-canvas'),
+                nodesContainer: document.getElementById('nodes-container'),
+                addNodeBtn: document.getElementById('add-node-btn'),
+                saveBtn: document.getElementById('save-btn'),
+                exportPngBtn: document.getElementById('export-png-btn'),
+                clearBtn: document.getElementById('clear-btn'),
+                toast: document.getElementById('toast'),
+                modalBackdrop: document.getElementById('modal-backdrop'),
+                modalTitle: document.getElementById('modal-title'),
+                modalText: document.getElementById('modal-text'),
+                modalConfirmBtn: document.getElementById('modal-confirm-btn'),
+                modalCancelBtn: document.getElementById('modal-cancel-btn'),
             };
-            history = history.slice(0, historyIndex + 1);
-            history.push(state);
-            historyIndex++;
-        };
+            this.ctx = this.dom.canvas.getContext('2d');
 
-        const loadState = (state) => {
-            nodes = JSON.parse(JSON.stringify(state.nodes));
-            connections = JSON.parse(JSON.stringify(state.connections));
-            nextNodeId = state.nextNodeId;
-            renderNodes();
-        };
+            // --- State ---
+            this.nodes = [];
+            this.connections = [];
+            this.history = [];
+            this.historyIndex = -1;
+            this.nextNodeId = 0;
+            this.selectedNodeId = null;
+            this.view = { x: 0, y: 0, scale: 1, isPanning: false, startPan: { x: 0, y: 0 } };
+            this.mouse = { x: 0, y: 0, worldX: 0, worldY: 0 };
+            
+            this.interaction = {
+                isDraggingNode: false,
+                isDrawingConnection: false,
+                draggedNodeId: null,
+                connectionStartNode: null,
+                potentialDrag: false,
+                startDragMouse: { x: 0, y: 0 },
+                dragOffset: { x: 0, y: 0 },
+            };
 
-        const undo = () => { if (historyIndex > 0) { historyIndex--; loadState(history[historyIndex]); }};
-        const redo = () => { if (historyIndex < history.length - 1) { historyIndex++; loadState(history[historyIndex]); }};
+            this.SOFT_COLORS = ['#F472B6', '#FBBF24', '#34D399', '#60A5FA', '#A78BFA', '#F87171', '#4FD1C5'];
+        }
+
+        // --- Initialization ---
+        init() {
+            this.attachEventListeners();
+            this.resizeCanvas();
+            
+            if (!this.loadFromStorage()) {
+                // Create a default layout if no save data is found
+                this.createNode(150, 200, "Home Page", 'rectangle', this.SOFT_COLORS[3]);
+                this.createNode(550, 200, "About Us", 'rectangle', this.SOFT_COLORS[2]);
+                this.connections.push({ from: 0, to: 1 });
+            }
+
+            this.saveState();
+            this.renderAll();
+        }
+
+        // --- Event Listeners ---
+        attachEventListeners() {
+            // Window and container events
+            window.addEventListener('resize', () => this.resizeCanvas());
+            const container = this.dom.diagramContainer;
+            container.addEventListener('mousedown', e => this.handleMouseDown(e));
+            container.addEventListener('mousemove', e => this.handleMouseMove(e));
+            container.addEventListener('mouseup', e => this.handleMouseUp(e));
+            container.addEventListener('mouseleave', e => this.handleMouseUp(e)); // End drag if mouse leaves
+            container.addEventListener('wheel', e => this.handleWheel(e), { passive: false });
+            container.addEventListener('dblclick', e => this.handleDoubleClick(e));
+            container.addEventListener('keydown', e => this.handleKeyDown(e));
+            
+            // Touch events for mobile support
+            container.addEventListener('touchstart', e => this.handleMouseDown(e.touches[0]), { passive: false });
+            container.addEventListener('touchmove', e => { e.preventDefault(); this.handleMouseMove(e.touches[0]); }, { passive: false });
+            container.addEventListener('touchend', e => this.handleMouseUp(e.changedTouches[0]));
+
+            // Toolbar buttons
+            this.dom.addNodeBtn.addEventListener('click', () => this.addNodeInCenter());
+            this.dom.saveBtn.addEventListener('click', () => this.saveToStorage());
+            this.dom.exportPngBtn.addEventListener('click', () => this.exportAsPng());
+            this.dom.clearBtn.addEventListener('click', () => {
+                this.showConfirmationModal('Clear Canvas', 'Are you sure you want to clear everything? This action cannot be undone.', () => this.clearCanvas());
+            });
+        }
+
+        // --- Coordinate & View Transformation ---
+        updateMousePos(e) {
+            const rect = this.dom.diagramContainer.getBoundingClientRect();
+            this.mouse.x = e.clientX - rect.left;
+            this.mouse.y = e.clientY - rect.top;
+            this.mouse.worldX = (this.mouse.x - this.view.x) / this.view.scale;
+            this.mouse.worldY = (this.mouse.y - this.view.y) / this.view.scale;
+        }
+
+        worldToScreen(x, y) {
+            return { x: x * this.view.scale + this.view.x, y: y * this.view.scale + this.view.y };
+        }
 
         // --- Rendering ---
-        const resizeCanvas = () => { canvas.width = diagramContainer.clientWidth; canvas.height = diagramContainer.clientHeight; redrawAll(); };
-        const redrawAll = () => { requestAnimationFrame(() => { clearCanvas(); drawConnections(); if (isDrawingConnection) drawTempConnection(); }); };
-        const clearCanvas = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+        resizeCanvas() {
+            this.dom.canvas.width = this.dom.diagramContainer.clientWidth;
+            this.dom.canvas.height = this.dom.diagramContainer.clientHeight;
+            this.renderAll();
+        }
 
-        const drawArrowhead = (from, to, targetCtx = ctx) => {
-            const angle = Math.atan2(to.y - from.y, to.x - from.x);
-            const headlen = 15;
-            targetCtx.beginPath();
-            targetCtx.moveTo(to.x, to.y);
-            targetCtx.lineTo(to.x - headlen * Math.cos(angle - Math.PI / 6), to.y - headlen * Math.sin(angle - Math.PI / 6));
-            targetCtx.moveTo(to.x, to.y);
-            targetCtx.lineTo(to.x - headlen * Math.cos(angle + Math.PI / 6), to.y - headlen * Math.sin(angle + Math.PI / 6));
-            targetCtx.stroke();
-        };
+        renderAll() {
+            requestAnimationFrame(() => {
+                this.clearCanvasCtx();
+                this.drawGrid();
+                this.drawConnections();
+                if (this.interaction.isDrawingConnection) this.drawTempConnection();
+                this.renderNodes();
+            });
+        }
 
-        const drawConnections = (targetCtx = ctx) => {
-            targetCtx.strokeStyle = 'rgba(113, 128, 150, 0.6)';
-            targetCtx.lineWidth = 2.5;
-            connections.forEach(conn => {
-                const fromNode = nodes.find(n => n.id === conn.from);
-                const toNode = nodes.find(n => n.id === conn.to);
+        clearCanvasCtx() {
+            this.ctx.save();
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+            this.ctx.clearRect(0, 0, this.dom.canvas.width, this.dom.canvas.height);
+            this.ctx.restore();
+        }
+
+        drawGrid() {
+            const gridSize = 50 * this.view.scale;
+            const offsetX = this.view.x % gridSize;
+            const offsetY = this.view.y % gridSize;
+            
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+            this.ctx.lineWidth = 1;
+
+            for (let x = offsetX; x < this.dom.canvas.width; x += gridSize) {
+                this.ctx.moveTo(x, 0);
+                this.ctx.lineTo(x, this.dom.canvas.height);
+            }
+            for (let y = offsetY; y < this.dom.canvas.height; y += gridSize) {
+                this.ctx.moveTo(0, y);
+                this.ctx.lineTo(this.dom.canvas.width, y);
+            }
+            this.ctx.stroke();
+        }
+
+        drawConnections(targetCtx = this.ctx, view = this.view) {
+            targetCtx.strokeStyle = 'rgba(156, 163, 175, 0.6)';
+            targetCtx.lineWidth = 2.5 * view.scale;
+            this.connections.forEach(conn => {
+                const fromNode = this.nodes.find(n => n.id === conn.from);
+                const toNode = this.nodes.find(n => n.id === conn.to);
                 if (!fromNode || !toNode) return;
 
-                const fromPos = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height };
-                const toPos = { x: toNode.x + toNode.width / 2, y: toNode.y };
-                
-                targetCtx.beginPath();
-                targetCtx.moveTo(fromPos.x, fromPos.y);
-                const cp1 = { x: fromPos.x, y: fromPos.y + 60 };
-                const cp2 = { x: toPos.x, y: toPos.y - 60 };
-                targetCtx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, toPos.x, toPos.y);
-                targetCtx.stroke();
-                drawArrowhead(cp2, toPos, targetCtx);
-            });
-        };
-        
-        const drawTempConnection = () => {
-            const startPos = { x: connectionStartNode.x + connectionStartNode.width / 2, y: connectionStartNode.y + connectionStartNode.height };
-            ctx.strokeStyle = '#4FD1C5'; ctx.lineWidth = 3; ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.moveTo(startPos.x, startPos.y);
-            ctx.bezierCurveTo(startPos.x, startPos.y + 60, mouse.x, mouse.y - 60, mouse.x, mouse.y);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        };
+                const fromPoint = this.getEdgePoint(fromNode, toNode);
+                const toPoint = this.getEdgePoint(toNode, fromNode);
+                const fromScreen = { x: fromPoint.x * view.scale + view.x, y: fromPoint.y * view.scale + view.y };
+                const toScreen = { x: toPoint.x * view.scale + view.x, y: toPoint.y * view.scale + view.y };
 
-        const renderNodes = () => {
-            nodesContainer.innerHTML = '';
-            nodes.forEach(node => {
+                const dx = toPoint.x - fromPoint.x;
+                const dy = toPoint.y - fromPoint.y;
+                const dist = Math.hypot(dx, dy);
+                // Increased the multiplier from 0.3 to 0.5 for more curve
+                const cpOffset = Math.max(50, dist * 0.5);
+
+                const cp1 = { x: fromPoint.x + (fromPoint.nx * cpOffset), y: fromPoint.y + (fromPoint.ny * cpOffset) };
+                const cp2 = { x: toPoint.x + (toPoint.nx * cpOffset), y: toPoint.y + (toPoint.ny * cpOffset) };
+                const cp1Screen = { x: cp1.x * view.scale + view.x, y: cp1.y * view.scale + view.y };
+                const cp2Screen = { x: cp2.x * view.scale + view.x, y: cp2.y * view.scale + view.y };
+
+                targetCtx.beginPath();
+                targetCtx.moveTo(fromScreen.x, fromScreen.y);
+                targetCtx.bezierCurveTo(cp1Screen.x, cp1Screen.y, cp2Screen.x, cp2Screen.y, toScreen.x, toScreen.y);
+                targetCtx.stroke();
+                this.drawArrowhead(cp2Screen, toScreen, targetCtx, view.scale);
+            });
+        }
+
+        drawArrowhead(from, to, targetCtx = this.ctx, scale = this.view.scale) {
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+            const headlen = 10 * scale;
+            targetCtx.save();
+            targetCtx.strokeStyle = 'rgba(156, 163, 175, 0.8)';
+            targetCtx.beginPath();
+            targetCtx.moveTo(to.x, to.y);
+            targetCtx.lineTo(to.x - headlen * Math.cos(angle - Math.PI / 7), to.y - headlen * Math.sin(angle - Math.PI / 7));
+            targetCtx.moveTo(to.x, to.y);
+            targetCtx.lineTo(to.x - headlen * Math.cos(angle + Math.PI / 7), to.y - headlen * Math.sin(angle + Math.PI / 7));
+            targetCtx.stroke();
+            targetCtx.restore();
+        }
+
+        drawTempConnection() {
+            const startNode = this.interaction.connectionStartNode;
+            const startPoint = this.getEdgePoint(startNode, { x: this.mouse.worldX, y: this.mouse.worldY, width: 0, height: 0 });
+            const startScreen = this.worldToScreen(startPoint.x, startPoint.y);
+
+            this.ctx.save();
+            this.ctx.strokeStyle = 'var(--accent)';
+            this.ctx.lineWidth = 3 * this.view.scale;
+            this.ctx.setLineDash([5 * this.view.scale, 5 * this.view.scale]);
+            this.ctx.beginPath();
+            this.ctx.moveTo(startScreen.x, startScreen.y);
+            this.ctx.lineTo(this.mouse.x, this.mouse.y);
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
+
+        renderNodes() {
+            this.dom.nodesContainer.innerHTML = '';
+            let connectionTargetId = null;
+            if (this.interaction.isDrawingConnection) {
+                const hoverNode = this.getNodeAt(this.mouse.worldX, this.mouse.worldY);
+                if (hoverNode && hoverNode.id !== this.interaction.connectionStartNode.id) {
+                    connectionTargetId = hoverNode.id;
+                }
+            }
+
+            this.nodes.forEach(node => {
+                const screenPos = this.worldToScreen(node.x, node.y);
                 const nodeEl = document.createElement('div');
                 nodeEl.id = `node-${node.id}`;
-                nodeEl.className = `node ${node.id === selectedNodeId ? 'selected' : ''}`;
-                nodeEl.style.cssText = `left:${node.x}px; top:${node.y}px; width:${node.width}px; height:${node.height}px;`;
+                nodeEl.className = `node ${node.id === this.selectedNodeId ? 'selected' : ''} ${node.id === connectionTargetId ? 'connection-target' : ''}`;
+                nodeEl.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px) scale(${this.view.scale})`;
+                nodeEl.style.width = `${node.width}px`;
+                nodeEl.style.height = `${node.height}px`;
 
                 let shapeSvg = '';
                 if (node.shape === 'rectangle') shapeSvg = `<rect x="1" y="1" width="${node.width-2}" height="${node.height-2}" rx="8" fill="${node.color}"></rect>`;
@@ -217,99 +452,324 @@
                 nodeEl.innerHTML = `
                     <svg class="node-svg" viewBox="0 0 ${node.width} ${node.height}">${shapeSvg}</svg>
                     <div class="node-name">${node.name}</div>
-                    <div class="absolute top-1 right-1 flex gap-1 bg-black/20 rounded-full p-0.5">
-                        <div class="edit-icon p-1 rounded-full hover:bg-black/30"><svg class="w-3 h-3 icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 1 1 3.536 3.536L6.5 21.036H3v-3.536L16.532 3.464z"></path></svg></div>
-                        <div class="color-icon p-1 rounded-full hover:bg-black/30"><svg class="w-3 h-3 icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69z"></path></svg></div>
-                        <div class="delete-icon p-1 rounded-full hover:bg-black/30"><svg class="w-3 h-3 icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></div>
-                    </div>
-                    <div class="connector top"></div><div class="connector bottom"></div>`;
+                    <div class="icon-btn delete-btn" title="Delete"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg></div>
+                    <div class="icon-btn duplicate-btn" title="Duplicate"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>
+                    <div class="icon-btn color-btn" title="Change Color"><svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69z"></path></svg></div>
+                    <div class="icon-btn connector-btn" title="Connect"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+                `;
                 
-                nodesContainer.appendChild(nodeEl);
-
-                // Event Listeners
-                nodeEl.addEventListener('mousedown', (e) => handleNodeMouseDown(e, node.id));
-                nodeEl.querySelector('.edit-icon').addEventListener('click', (e) => { e.stopPropagation(); makeEditable(nodeEl.querySelector('.node-name'), node.id); });
-                nodeEl.querySelector('.color-icon').addEventListener('click', (e) => { e.stopPropagation(); showColorPalette(node.id, nodeEl); });
-                nodeEl.querySelector('.delete-icon').addEventListener('click', (e) => { e.stopPropagation(); deleteNode(node.id); });
+                this.dom.nodesContainer.appendChild(nodeEl);
+                nodeEl.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); this.deleteNode(node.id); });
+                nodeEl.querySelector('.duplicate-btn').addEventListener('click', (e) => { e.stopPropagation(); this.duplicateNode(node.id); });
+                nodeEl.querySelector('.color-btn').addEventListener('click', (e) => { e.stopPropagation(); this.showColorPalette(node.id, nodeEl); });
+                nodeEl.querySelector('.connector-btn').addEventListener('mousedown', (e) => { e.stopPropagation(); this.startConnection(node.id); });
             });
-            redrawAll();
-        };
+        }
         
-        // --- Core Logic ---
-        const createNode = (x, y, name, shape = 'rectangle', color) => {
+        // --- Interaction Handlers ---
+        handleMouseDown(e) {
+            this.updateMousePos(e);
+            
+            // Pan with spacebar or middle mouse button
+            if (e.code === 'Space' || e.button === 1) {
+                this.view.isPanning = true;
+                this.dom.diagramContainer.classList.add('panning');
+                this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y };
+                e.preventDefault();
+                return;
+            }
+
+            const nodeEl = e.target.closest('.node');
+            if (nodeEl) {
+                const nodeId = parseInt(nodeEl.id.split('-')[1]);
+                this.interaction.potentialDrag = true;
+                this.interaction.draggedNodeId = nodeId;
+                this.setSelectedNode(nodeId);
+                
+                const node = this.nodes.find(n => n.id === nodeId);
+                this.interaction.startDragMouse = { x: this.mouse.worldX, y: this.mouse.worldY };
+                this.interaction.dragOffset = { x: this.mouse.worldX - node.x, y: this.mouse.worldY - node.y };
+            } else {
+                this.setSelectedNode(null);
+                this.view.isPanning = true;
+                this.dom.diagramContainer.classList.add('panning');
+                this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y };
+            }
+        }
+
+        handleMouseMove(e) {
+            this.updateMousePos(e);
+            
+            if (this.view.isPanning) {
+                this.view.x = this.mouse.x - this.view.startPan.x;
+                this.view.y = this.mouse.y - this.view.startPan.y;
+                this.renderAll();
+                return;
+            }
+            
+            if (this.interaction.potentialDrag && !this.interaction.isDraggingNode) {
+                const movedDist = Math.hypot(this.mouse.worldX - this.interaction.startDragMouse.x, this.mouse.worldY - this.interaction.startDragMouse.y);
+                if (movedDist * this.view.scale > 5) {
+                    this.interaction.isDraggingNode = true;
+                    document.getElementById(`node-${this.interaction.draggedNodeId}`)?.classList.add('dragging');
+                }
+            }
+
+            if (this.interaction.isDraggingNode) {
+                const node = this.nodes.find(n => n.id === this.interaction.draggedNodeId);
+                if (node) {
+                    node.x = this.mouse.worldX - this.interaction.dragOffset.x;
+                    node.y = this.mouse.worldY - this.interaction.dragOffset.y;
+                    this.renderAll();
+                }
+            } else if (this.interaction.isDrawingConnection) {
+                this.renderAll();
+            }
+        }
+
+        handleMouseUp(e) {
+            if (this.interaction.isDrawingConnection) {
+                const endNode = this.getNodeAt(this.mouse.worldX, this.mouse.worldY);
+                if (endNode && endNode.id !== this.interaction.connectionStartNode.id) {
+                    const existingConnection = this.connections.find(c => (c.from === this.interaction.connectionStartNode.id && c.to === endNode.id));
+                    if (!existingConnection) {
+                        this.connections.push({ from: this.interaction.connectionStartNode.id, to: endNode.id });
+                        this.saveState();
+                    }
+                }
+            }
+
+            if (this.interaction.isDraggingNode) {
+                document.getElementById(`node-${this.interaction.draggedNodeId}`)?.classList.remove('dragging');
+                this.saveState();
+            }
+
+            this.interaction.isDraggingNode = false;
+            this.interaction.isDrawingConnection = false;
+            this.interaction.potentialDrag = false;
+            this.interaction.draggedNodeId = null;
+            this.interaction.connectionStartNode = null;
+            this.view.isPanning = false;
+            this.dom.diagramContainer.classList.remove('panning');
+            this.renderAll();
+        }
+
+        handleWheel(e) {
+            e.preventDefault();
+            const scaleAmount = 1.1;
+            const oldScale = this.view.scale;
+            
+            if (e.deltaY < 0) {
+                this.view.scale *= scaleAmount;
+            } else {
+                this.view.scale /= scaleAmount;
+            }
+            this.view.scale = Math.max(0.1, Math.min(this.view.scale, 5));
+
+            // Zoom towards the mouse pointer
+            this.view.x = this.mouse.x - (this.mouse.x - this.view.x) * (this.view.scale / oldScale);
+            this.view.y = this.mouse.y - (this.mouse.y - this.view.y) * (this.view.scale / oldScale);
+
+            this.renderAll();
+        }
+        
+        handleDoubleClick(e) {
+            this.updateMousePos(e);
+            const nodeEl = e.target.closest('.node');
+            if (nodeEl) {
+                const nodeId = parseInt(nodeEl.id.split('-')[1]);
+                this.makeEditable(nodeEl.querySelector('.node-name'), nodeId);
+            } else {
+                 this.createNode(this.mouse.worldX - 80, this.mouse.worldY - 48, 'New Page');
+                 this.saveState();
+                 this.renderAll();
+            }
+        }
+
+        handleKeyDown(e) {
+            if (document.activeElement.isContentEditable) return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!this.view.isPanning) {
+                    this.view.isPanning = true;
+                    this.dom.diagramContainer.classList.add('panning');
+                    this.updateMousePos(e);
+                    this.view.startPan = { x: this.mouse.x - this.view.x, y: this.mouse.y - this.view.y };
+                }
+                return;
+            }
+
+            const isMod = e.ctrlKey || e.metaKey;
+            if (isMod && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                e.shiftKey ? this.redo() : this.undo();
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                if(this.selectedNodeId !== null) this.deleteNode(this.selectedNodeId);
+            }
+        }
+
+        // --- Node & Connection Logic ---
+        createNode(x, y, name, shape = 'rectangle', color, id) {
             const newNode = {
-                id: nextNodeId++, name: name || `Page ${nextNodeId}`, shape, x, y,
+                id: id !== undefined ? id : this.nextNodeId++,
+                name: name || `Page ${this.nextNodeId}`,
+                shape, x, y,
                 width: 160, height: 96,
-                color: color || VIBRANT_COLORS[Math.floor(Math.random() * VIBRANT_COLORS.length)]
+                color: color || this.SOFT_COLORS[Math.floor(Math.random() * this.SOFT_COLORS.length)]
             };
-            nodes.push(newNode);
-            setSelectedNode(newNode.id);
-            saveState();
-            renderNodes();
+            if (id === undefined && newNode.id >= this.nextNodeId) {
+                this.nextNodeId = newNode.id + 1;
+            }
+            this.nodes.push(newNode);
+            this.setSelectedNode(newNode.id);
             return newNode;
-        };
+        }
 
-        const deleteNode = (nodeId) => {
-            nodes = nodes.filter(n => n.id !== nodeId);
-            connections = connections.filter(c => c.from !== nodeId && c.to !== nodeId);
-            saveState();
-            renderNodes();
-        };
+        addNodeInCenter() {
+            const rect = this.dom.diagramContainer.getBoundingClientRect();
+            const centerX = (rect.width / 2 - this.view.x) / this.view.scale;
+            const centerY = (rect.height / 2 - this.view.y) / this.view.scale;
+            this.createNode(centerX - 80, centerY - 48, 'New Page');
+            this.saveState();
+            this.renderAll();
+        }
 
-        const setSelectedNode = (nodeId) => {
-            selectedNodeId = nodeId;
-            renderNodes();
-        };
+        deleteNode(nodeId) {
+            this.nodes = this.nodes.filter(n => n.id !== nodeId);
+            this.connections = this.connections.filter(c => c.from !== nodeId && c.to !== nodeId);
+            if (this.selectedNodeId === nodeId) this.selectedNodeId = null;
+            this.saveState();
+            this.renderAll();
+        }
 
-        const showColorPalette = (nodeId, nodeEl) => {
+        duplicateNode(nodeId) {
+            const originalNode = this.nodes.find(n => n.id === nodeId);
+            if (!originalNode) return;
+            const newNode = this.createNode(originalNode.x + 20, originalNode.y + 20, originalNode.name, originalNode.shape, originalNode.color);
+            this.setSelectedNode(newNode.id);
+            this.saveState();
+            this.renderAll();
+        }
+
+        setSelectedNode(nodeId) {
+            if (this.selectedNodeId === nodeId) return;
+            this.selectedNodeId = nodeId;
+            this.renderAll();
+        }
+
+        startConnection(nodeId) {
+            this.interaction.isDrawingConnection = true;
+            this.interaction.connectionStartNode = this.nodes.find(n => n.id === nodeId);
+        }
+
+        // --- UI & UX Helpers ---
+        showToast(message) {
+            this.dom.toast.textContent = message;
+            this.dom.toast.classList.add('show');
+            setTimeout(() => {
+                this.dom.toast.classList.remove('show');
+            }, 3000);
+        }
+
+        showConfirmationModal(title, text, onConfirm) {
+            this.dom.modalTitle.textContent = title;
+            this.dom.modalText.textContent = text;
+            this.dom.modalBackdrop.classList.add('visible');
+
+            const confirmHandler = () => {
+                onConfirm();
+                cleanup();
+            };
+            const cancelHandler = () => {
+                cleanup();
+            };
+            const cleanup = () => {
+                this.dom.modalBackdrop.classList.remove('visible');
+                this.dom.modalConfirmBtn.removeEventListener('click', confirmHandler);
+                this.dom.modalCancelBtn.removeEventListener('click', cancelHandler);
+            };
+
+            this.dom.modalConfirmBtn.addEventListener('click', confirmHandler, { once: true });
+            this.dom.modalCancelBtn.addEventListener('click', cancelHandler, { once: true });
+        }
+        
+        showColorPalette(nodeId, nodeEl) {
             document.getElementById('color-palette')?.remove();
             const palette = document.createElement('div');
             palette.id = 'color-palette';
-            VIBRANT_COLORS.forEach(color => {
+            
+            this.SOFT_COLORS.forEach(color => {
                 const swatch = document.createElement('div');
                 swatch.className = 'w-6 h-6 rounded-full cursor-pointer border-2 border-transparent hover:border-white transition-all';
                 swatch.style.backgroundColor = color;
                 swatch.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const node = nodes.find(n => n.id === nodeId);
+                    const node = this.nodes.find(n => n.id === nodeId);
                     node.color = color;
                     palette.remove();
-                    saveState();
-                    renderNodes();
+                    this.saveState();
+                    this.renderAll();
                 });
                 palette.appendChild(swatch);
             });
-            document.body.appendChild(palette);
+            
+            this.dom.diagramContainer.appendChild(palette);
             const rect = nodeEl.getBoundingClientRect();
-            palette.style.left = `${rect.left}px`;
-            palette.style.top = `${rect.bottom + 8}px`;
-            setTimeout(() => document.addEventListener('click', () => palette.remove(), { once: true }), 0);
-        };
+            const containerRect = this.dom.diagramContainer.getBoundingClientRect();
+            palette.style.left = `${rect.left - containerRect.left}px`;
+            palette.style.top = `${rect.bottom - containerRect.top + 8}px`;
 
-        const makeEditable = (element, nodeId) => {
+            setTimeout(() => document.addEventListener('click', () => palette.remove(), { once: true }), 0);
+        }
+
+        makeEditable(element, nodeId) {
             element.contentEditable = true;
-            element.focus(); document.execCommand('selectAll', false, null);
+            element.focus();
+            document.execCommand('selectAll', false, null);
+            
             const onBlur = () => {
                 element.contentEditable = false;
-                if (nodeId !== undefined) {
-                    const node = nodes.find(n => n.id === nodeId);
-                    if (node && node.name !== element.textContent) {
-                        node.name = element.textContent;
-                        saveState();
-                    }
+                const node = this.nodes.find(n => n.id === nodeId);
+                if (node && node.name !== element.textContent.trim()) {
+                    node.name = element.textContent.trim();
+                    this.saveState();
+                }
+                element.removeEventListener('blur', onBlur);
+                element.removeEventListener('keydown', onKeydown);
+            };
+            
+            const onKeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    element.blur();
+                } else if (e.key === 'Escape') {
+                    element.textContent = this.nodes.find(n => n.id === nodeId).name;
+                    element.blur();
                 }
             };
-            element.addEventListener('blur', onBlur, { once: true });
-            element.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); element.blur(); } });
-        };
+
+            element.addEventListener('blur', onBlur);
+            element.addEventListener('keydown', onKeydown);
+        }
         
-        const handleSave = () => {
-            if (nodes.length === 0) return;
+        clearCanvas() {
+            this.nodes = [];
+            this.connections = [];
+            this.nextNodeId = 0;
+            this.saveState();
+            this.renderAll();
+        }
+        
+        exportAsPng() {
+            if (this.nodes.length === 0) {
+                this.showToast('Canvas is empty!');
+                return;
+            }
 
             const padding = 100;
-            let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
-            nodes.forEach(node => {
+            this.nodes.forEach(node => {
                 minX = Math.min(minX, node.x);
                 minY = Math.min(minY, node.y);
                 maxX = Math.max(maxX, node.x + node.width);
@@ -319,188 +779,154 @@
             const contentWidth = maxX - minX;
             const contentHeight = maxY - minY;
             
-            const scale = 2; // For higher resolution
+            const exportScale = 2; // For higher resolution
             const offscreenCanvas = document.createElement('canvas');
-            offscreenCanvas.width = (contentWidth + padding * 2) * scale;
-            offscreenCanvas.height = (contentHeight + padding * 2) * scale;
+            offscreenCanvas.width = (contentWidth + padding * 2) * exportScale;
+            offscreenCanvas.height = (contentHeight + padding * 2) * exportScale;
             const offCtx = offscreenCanvas.getContext('2d');
-            offCtx.scale(scale, scale);
-
+            
             // Draw background
-            offCtx.fillStyle = '#1a202c';
+            offCtx.fillStyle = '#111827';
             offCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
             
-            offCtx.translate(-minX + padding, -minY + padding);
+            // Prepare drawing context
+            offCtx.translate((-minX + padding) * exportScale, (-minY + padding) * exportScale);
 
             // Draw connections
-            drawConnections(offCtx);
+            this.drawConnections(offCtx, { x: 0, y: 0, scale: exportScale });
+            
+            // Draw nodes and text
+            this.nodes.forEach(node => {
+                const x = node.x * exportScale;
+                const y = node.y * exportScale;
+                const w = node.width * exportScale;
+                const h = node.height * exportScale;
 
-            // Draw nodes
-            nodes.forEach(node => {
                 offCtx.fillStyle = node.color;
                 offCtx.beginPath();
-                if (node.shape === 'rectangle') {
-                    offCtx.roundRect(node.x, node.y, node.width, node.height, 8);
-                } else if (node.shape === 'oval') {
-                    offCtx.ellipse(node.x + node.width / 2, node.y + node.height / 2, node.width / 2, node.height / 2, 0, 0, 2 * Math.PI);
-                } else if (node.shape === 'diamond') {
-                    offCtx.moveTo(node.x + node.width / 2, node.y);
-                    offCtx.lineTo(node.x + node.width, node.y + node.height / 2);
-                    offCtx.lineTo(node.x + node.width / 2, node.y + node.height);
-                    offCtx.lineTo(node.x, node.y + node.height / 2);
+                if (node.shape === 'rectangle') offCtx.roundRect(x, y, w, h, 8 * exportScale);
+                else if (node.shape === 'oval') offCtx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
+                else if (node.shape === 'diamond') {
+                    offCtx.moveTo(x + w / 2, y);
+                    offCtx.lineTo(x + w, y + h / 2);
+                    offCtx.lineTo(x + w / 2, y + h);
+                    offCtx.lineTo(x, y + h / 2);
                     offCtx.closePath();
                 }
                 offCtx.fill();
 
-                // Draw text
                 offCtx.fillStyle = '#FFFFFF';
-                offCtx.font = '500 16px Inter';
+                offCtx.font = `500 ${14 * exportScale}px Inter`;
                 offCtx.textAlign = 'center';
                 offCtx.textBaseline = 'middle';
-                offCtx.fillText(node.name, node.x + node.width / 2, node.y + node.height / 2);
+                offCtx.fillText(node.name, x + w / 2, y + h / 2);
             });
 
             // Trigger download
             const link = document.createElement('a');
-            link.download = `${mainTitle.textContent.trim().replace(/ /g, '_')}.png`;
+            link.download = `website-map.png`;
             link.href = offscreenCanvas.toDataURL('image/png');
             link.click();
-        };
+            this.showToast('Exporting as PNG...');
+        }
 
-        // --- Event Handlers ---
-        const handleKeyDown = (e) => {
-            if (e.target.isContentEditable) return;
-            const isMod = e.ctrlKey || e.metaKey;
-            if (isMod && e.key.toLowerCase() === 'c') {
-                if (selectedNodeId !== null) clipboard = JSON.parse(JSON.stringify(nodes.find(n => n.id === selectedNodeId)));
-            } else if (isMod && e.key.toLowerCase() === 'v') {
-                if (clipboard) {
-                    createNode(clipboard.x + 20, clipboard.y + 20, clipboard.name, clipboard.shape, clipboard.color);
-                }
-            } else if (isMod && e.shiftKey && e.key.toLowerCase() === 'z') {
-                e.preventDefault(); redo();
-            } else if (isMod && e.key.toLowerCase() === 'z') {
-                e.preventDefault(); undo();
-            } else if (e.key === 'Delete' || e.key === 'Backspace') {
-                if(selectedNodeId !== null) deleteNode(selectedNodeId);
-            }
-        };
 
-        const handleNodeMouseDown = (e, nodeId) => {
-            if (e.target.closest('.connector') || e.target.closest('.icon-btn')) return;
-            setSelectedNode(nodeId);
-            draggedNodeId = nodeId;
-            const node = nodes.find(n => n.id === nodeId);
-            
-            if (e.altKey) {
-                isDragCopying = true;
-            } else {
-                isDraggingNode = true;
-                document.getElementById(`node-${nodeId}`).classList.add('dragging');
-            }
-            
-            offset.x = e.clientX - node.x;
-            offset.y = e.clientY - node.y;
-        };
-
-        const handleConnectorMouseDown = (e) => {
-            if (!e.target.classList.contains('connector')) return;
-            e.stopPropagation();
-            isDrawingConnection = true;
-            connectionStartNode = nodes.find(n => n.id === parseInt(e.target.closest('.node').id.split('-')[1]));
-        };
-
-        const handleMouseMove = (e) => {
-            mouse.x = e.clientX - diagramContainer.getBoundingClientRect().left;
-            mouse.y = e.clientY - diagramContainer.getBoundingClientRect().top;
-            if (isDraggingNode && draggedNodeId !== null) {
-                const node = nodes.find(n => n.id === draggedNodeId);
-                if (node) {
-                    node.x = mouse.x - offset.x;
-                    node.y = mouse.y - offset.y;
-                    const nodeEl = document.getElementById(`node-${draggedNodeId}`);
-                    nodeEl.style.left = `${node.x}px`;
-                    nodeEl.style.top = `${node.y}px`;
-                    redrawAll();
-                }
-            } else if (isDrawingConnection) {
-                redrawAll();
-            }
-        };
-
-        const handleMouseUp = (e) => {
-            if (isDragCopying) {
-                const originalNode = nodes.find(n => n.id === draggedNodeId);
-                const newNode = createNode(mouse.x - offset.x, mouse.y - offset.y, originalNode.name, originalNode.shape, originalNode.color);
-                setSelectedNode(newNode.id);
-            }
-            
-            if (isDrawingConnection) {
-                const endTarget = document.elementFromPoint(e.clientX, e.clientY);
-                const endNodeEl = endTarget.classList.contains('connector') ? endTarget.closest('.node') : null;
-                if (endNodeEl && connectionStartNode) {
-                    const endNodeId = parseInt(endNodeEl.id.split('-')[1]);
-                    if (connectionStartNode.id !== endNodeId) {
-                        connections.push({ from: connectionStartNode.id, to: endNodeId });
-                        saveState();
-                    }
+        // --- Utility ---
+        getNodeAt(worldX, worldY) {
+            // Find the top-most node
+            for (let i = this.nodes.length - 1; i >= 0; i--) {
+                const node = this.nodes[i];
+                if (worldX >= node.x && worldX <= node.x + node.width &&
+                    worldY >= node.y && worldY <= node.y + node.height) {
+                    return node;
                 }
             }
+            return null;
+        }
 
-            if (isDraggingNode && draggedNodeId !== null) {
-                document.getElementById(`node-${draggedNodeId}`)?.classList.remove('dragging');
-                saveState();
+        getEdgePoint(nodeA, nodeB) {
+            const centerA = { x: nodeA.x + nodeA.width / 2, y: nodeA.y + nodeA.height / 2 };
+            const centerB = { x: nodeB.x + nodeB.width / 2, y: nodeB.y + nodeB.height / 2 };
+            const dx = centerB.x - centerA.x;
+            const dy = centerB.y - centerA.y;
+
+            const w = nodeA.width / 2;
+            const h = nodeA.height / 2;
+            
+            const angle = Math.atan2(dy, dx);
+            const tanV = Math.tan(angle);
+            
+            let x, y;
+            if (Math.abs(dy / dx) < h / w) { // Intersects left/right
+                x = centerA.x + Math.sign(dx) * w;
+                y = centerA.y + Math.sign(dx) * w * tanV;
+            } else { // Intersects top/bottom
+                y = centerA.y + Math.sign(dy) * h;
+                x = centerA.x + Math.sign(dy) * h / tanV;
             }
+            
+            const nx = Math.cos(angle);
+            const ny = Math.sin(angle);
 
-            isDraggingNode = false; isDrawingConnection = false; isDragCopying = false;
-            draggedNodeId = null; connectionStartNode = null;
-            redrawAll();
-        };
+            return { x, y, nx, ny };
+        }
 
-        const toggleSidebar = () => {
-            isSidebarOpen = !isSidebarOpen;
-            sidebar.classList.toggle('collapsed');
-            mainContent.style.marginLeft = isSidebarOpen ? `${sidebar.offsetWidth}px` : '0px';
-            setTimeout(resizeCanvas, 300);
-        };
+        // --- State & Storage ---
+        saveState() {
+            const state = {
+                nodes: JSON.parse(JSON.stringify(this.nodes)),
+                connections: JSON.parse(JSON.stringify(this.connections)),
+                nextNodeId: this.nextNodeId,
+                view: JSON.parse(JSON.stringify(this.view))
+            };
+            this.history = this.history.slice(0, this.historyIndex + 1);
+            this.history.push(state);
+            this.historyIndex++;
+        }
 
-        // --- Initialization ---
-        const init = () => {
-            // Sidebar Drag & Drop
-            document.querySelectorAll('.library-item').forEach(item => {
-                item.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', JSON.stringify({ name: e.currentTarget.dataset.name, shape: e.currentTarget.dataset.shape }));
+        loadState(state) {
+            this.nodes = JSON.parse(JSON.stringify(state.nodes));
+            this.connections = JSON.parse(JSON.stringify(state.connections));
+            this.nextNodeId = state.nextNodeId;
+            this.view = JSON.parse(JSON.stringify(state.view));
+            this.renderAll();
+        }
+
+        undo() { if (this.historyIndex > 0) { this.historyIndex--; this.loadState(this.history[this.historyIndex]); } }
+        redo() { if (this.historyIndex < this.history.length - 1) { this.historyIndex++; this.loadState(this.history[this.historyIndex]); } }
+
+        saveToStorage() {
+            const data = {
+                nodes: this.nodes,
+                connections: this.connections,
+                nextNodeId: this.nextNodeId,
+                view: this.view
+            };
+            localStorage.setItem('flowchartAppSave', JSON.stringify(data));
+            this.showToast('Diagram saved!');
+        }
+
+        loadFromStorage() {
+            const savedData = localStorage.getItem('flowchartAppSave');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                this.nodes = [];
+                data.nodes.forEach(nodeData => {
+                    this.createNode(nodeData.x, nodeData.y, nodeData.name, nodeData.shape, nodeData.color, nodeData.id);
                 });
-            });
-            diagramContainer.addEventListener('dragover', (e) => e.preventDefault());
-            diagramContainer.addEventListener('drop', (e) => {
-                e.preventDefault();
-                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-                const rect = diagramContainer.getBoundingClientRect();
-                createNode(e.clientX - rect.left - 80, e.clientY - rect.top - 48, data.name, data.shape);
-            });
-            
-            // Listeners
-            sidebarToggleBtn.addEventListener('click', toggleSidebar);
-            resizeCanvas(); window.addEventListener('resize', resizeCanvas);
-            addNodeBtn.addEventListener('click', () => createNode(canvas.width / 2 - 80, canvas.height / 2 - 48, 'New Page'));
-            saveBtn.addEventListener('click', handleSave);
-            document.addEventListener('mousedown', handleConnectorMouseDown);
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
-            diagramContainer.addEventListener('keydown', handleKeyDown);
-            editTitleBtn.addEventListener('click', () => makeEditable(mainTitle));
-            
-            // Initial setup
-            toggleSidebar(); // Start open
-            createNode(150, 200, "Home Page", 'rectangle', VIBRANT_COLORS[0]);
-            createNode(450, 350, "About Us", 'rectangle', VIBRANT_COLORS[1]);
-            connections.push({from: 0, to: 1});
-            saveState(); // Save initial state
-            renderNodes();
-        };
+                this.connections = data.connections;
+                this.nextNodeId = data.nextNodeId;
+                this.view = data.view;
+                this.showToast('Loaded saved diagram.');
+                return true;
+            }
+            return false;
+        }
+    }
 
-        init();
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new FlowchartApp();
+        app.init();
     });
     </script>
 </body>
