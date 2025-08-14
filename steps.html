@@ -126,8 +126,8 @@
                     <div class="input-group">
                         <i data-lucide="gauge-circle" class="input-icon"></i>
                         <select id="intensityInput" class="select-field">
-                            <option value="casual">Casual Walk</option>
-                            <option value="brisk" selected>Brisk Walk</option>
+                            <option value="casual" selected>Casual Walk</option>
+                            <option value="brisk">Brisk Walk</option>
                             <option value="vigorous">Vigorous Walk/Jog</option>
                         </select>
                     </div>
@@ -185,9 +185,11 @@
             
             // --- Scientific Constants based on provided logic ---
             const INTENSITY_PROFILES = {
-                casual:   { name: 'Casual',   cadence: 90,  METs: 3.5, heartPointsPerMin: 1 },
-                brisk:    { name: 'Brisk',    cadence: 110, METs: 4.3, heartPointsPerMin: 1 },
-                vigorous: { name: 'Vigorous', cadence: 130, METs: 6.0, heartPointsPerMin: 2 }
+                // EDIT: Changed heart points to 1 per 103 seconds
+                casual:   { name: 'Casual',   cadence: 90,  METs: 3.5, heartPointsPerMin: 60 / 103 },
+                brisk:    { name: 'Brisk',    cadence: 110, METs: 4.3, heartPointsPerMin: 60 / 103 },
+                // EDIT: Vigorous is now 2 points per 103 seconds
+                vigorous: { name: 'Vigorous', cadence: 130, METs: 6.0, heartPointsPerMin: (60 / 103) * 2 }
             };
 
             // --- Event Listeners ---
@@ -293,17 +295,16 @@
                 ctx.clip();
 
                 if (profileImage) {
-                    // --- FIX: Logic to zoom and crop image to fill the circle ---
                     const imgWidth = profileImage.width;
                     const imgHeight = profileImage.height;
                     const aspectRatio = imgWidth / imgHeight;
 
                     let drawWidth, drawHeight;
 
-                    if (aspectRatio < 1) { // Image is taller than it is wide
+                    if (aspectRatio < 1) { 
                         drawWidth = profilePicSize;
                         drawHeight = profilePicSize / aspectRatio;
-                    } else { // Image is wider than it is tall, or square
+                    } else { 
                         drawHeight = profilePicSize;
                         drawWidth = profilePicSize * aspectRatio;
                     }
@@ -363,10 +364,9 @@
                 ctx.textAlign = 'center';
                 ctx.font = "italic 500 22px 'Inter'";
                 
-                // Add a glowing effect
-                ctx.shadowColor = '#a5b4fc'; // A light indigo for the glow
+                ctx.shadowColor = '#a5b4fc'; 
                 ctx.shadowBlur = 15;
-                ctx.fillStyle = '#e0e7ff'; // A very light indigo for the text
+                ctx.fillStyle = '#e0e7ff'; 
                 
                 const text1 = "Failed the wellness challenge, but not the ritual...";
                 const text2 = "oops 😉";
@@ -374,7 +374,6 @@
                 ctx.fillText(text1, canvas.width / 2, y);
                 ctx.fillText(text2, canvas.width / 2, y + 30);
                 
-                // Reset shadow for other elements
                 ctx.shadowColor = 'transparent';
                 ctx.shadowBlur = 0;
             }
