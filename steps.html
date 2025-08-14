@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step Tracker Generator</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide-static@latest/umd/lucide.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: #111827; /* gray-900 */
+        }
+        .card {
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 1.5rem;
+            border: 1px solid #374151; /* gray-700 */
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .file-input {
+            display: none;
+        }
+        .file-label {
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: #374151; /* gray-700 */
+            color: #d1d5db; /* gray-300 */
+            border: 1px solid #4b5563; /* gray-600 */
+        }
+        .file-label:hover {
+            background-color: #4b5563; /* gray-600 */
+            border-color: #6b7280; /* gray-500 */
+        }
+        .generate-btn {
+            background-image: linear-gradient(to right, #3b82f6, #8b5cf6);
+            color: white;
+            box-shadow: 0 0 20px 0 rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px 5px rgba(99, 102, 241, 0.5);
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-field, .select-field {
+            width: 100%;
+            border-radius: 0.75rem;
+            border: 1px solid #4b5563; /* gray-600 */
+            background-color: #374151; /* gray-700 */
+            color: #f3f4f6; /* gray-100 */
+            padding: 0.75rem 1rem;
+            padding-left: 2.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        .input-field:focus, .select-field:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        .input-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af; /* gray-400 */
+            pointer-events: none; /* Make icon non-interactive */
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #9ca3af; /* gray-400 */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 sm:p-6">
+    <div class="card w-full max-w-5xl flex flex-col lg:flex-row gap-8 p-6 sm:p-8">
+        <!-- Left Side: Controls -->
+        <div class="flex flex-col space-y-6 lg:w-1/2">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Fitness Card</h1>
+                <p class="text-gray-400 mt-1">Customize your daily stats.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="input-group">
+                    <label for="imageUpload" class="file-label">
+                        <i data-lucide="upload-cloud"></i>
+                        Upload Profile Picture
+                    </label>
+                    <input type="file" id="imageUpload" class="file-input" accept="image/*">
+                </div>
+                <div>
+                    <label for="weightInput" class="input-label">Body Weight (kg)</label>
+                    <div class="input-group">
+                        <i data-lucide="weight" class="input-icon"></i>
+                        <input type="number" id="weightInput" value="70" class="input-field" placeholder="Weight (kg)">
+                    </div>
+                </div>
+                <div>
+                    <label for="intensityInput" class="input-label">Walking Intensity</label>
+                    <div class="input-group">
+                        <i data-lucide="gauge-circle" class="input-icon"></i>
+                        <select id="intensityInput" class="select-field">
+                            <option value="casual">Casual Walk</option>
+                            <option value="brisk" selected>Brisk Walk</option>
+                            <option value="vigorous">Vigorous Walk/Jog</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="completedSteps" class="input-label">Your Steps</label>
+                        <div class="input-group">
+                            <i data-lucide="footprints" class="input-icon"></i>
+                            <input type="number" id="completedSteps" value="11757" class="input-field" placeholder="Completed Steps">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="targetSteps" class="input-label">Goal Steps</label>
+                        <div class="input-group">
+                            <i data-lucide="target" class="input-icon"></i>
+                            <input type="number" id="targetSteps" value="10000" class="input-field" placeholder="Target Steps">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-4 mt-auto">
+                 <button id="generateBtn" class="generate-btn w-full font-bold py-3 px-4 rounded-xl">
+                    <i data-lucide="download"></i>
+                    Generate & Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Side: Canvas Preview -->
+        <div class="flex items-center justify-center bg-gray-900 p-4 rounded-2xl aspect-[2/3] lg:w-1/2">
+            <canvas id="outputCanvas" class="w-full h-full rounded-xl shadow-inner"></canvas>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all DOM elements first
+            const targetStepsInput = document.getElementById('targetSteps');
+            const completedStepsInput = document.getElementById('completedSteps');
+            const imageUploadInput = document.getElementById('imageUpload');
+            const weightInput = document.getElementById('weightInput');
+            const intensityInput = document.getElementById('intensityInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const canvas = document.getElementById('outputCanvas');
+            const ctx = canvas.getContext('2d');
+            let profileImage = null;
+
+            // Set fixed internal resolution for high-quality output
+            const canvasWidth = 800;
+            const canvasHeight = 1200;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            // --- Scientific Constants based on provided logic ---
+            const INTENSITY_PROFILES = {
+                casual:   { name: 'Casual',   cadence: 90,  METs: 3.5, heartPointsPerMin: 1 },
+                brisk:    { name: 'Brisk',    cadence: 110, METs: 4.3, heartPointsPerMin: 1 },
+                vigorous: { name: 'Vigorous', cadence: 130, METs: 6.0, heartPointsPerMin: 2 }
+            };
+
+            // --- Event Listeners ---
+            imageUploadInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        profileImage = new Image();
+                        profileImage.onload = () => drawGraphic(); // Redraw when image is loaded
+                        profileImage.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            generateBtn.addEventListener('click', () => {
+                drawGraphic(); // Ensure the latest version is drawn
+                setTimeout(downloadGraphic, 100); // Small delay to ensure canvas is updated
+            });
+            
+            // Add listeners to redraw the canvas when inputs change
+            [targetStepsInput, completedStepsInput, weightInput, intensityInput].forEach(input => {
+                input.addEventListener('input', drawGraphic);
+            });
+
+            // Initial drawing of the graphic on page load
+            drawGraphic();
+
+            // --- Main Drawing Function ---
+            function drawGraphic() {
+                // --- 1. Get User Inputs ---
+                const completedSteps = parseInt(completedStepsInput.value) || 0;
+                const targetSteps = parseInt(targetStepsInput.value) || 1; // Avoid division by zero
+                const weightKg = parseFloat(weightInput.value) || 0;
+                const intensity = intensityInput.value;
+                const profile = INTENSITY_PROFILES[intensity];
+
+                // --- 2. Perform Calculations based on Scientific Logic ---
+                const moveMin = completedSteps / profile.cadence;
+                const targetMoveMin = targetSteps / profile.cadence;
+
+                const caloriesBurned = Math.round((profile.METs * 3.5 * weightKg) / 200 * moveMin);
+                const heartPoints = Math.round(moveMin * profile.heartPointsPerMin);
+                const targetHeartPoints = Math.round(targetMoveMin * profile.heartPointsPerMin) || 1;
+                const distanceKm = (completedSteps * 0.0008).toFixed(1);
+
+                // --- 3. Define Colors & State ---
+                const isTargetExceeded = completedSteps > targetSteps;
+                const heartPointsTextColor = isTargetExceeded ? '#F87171' : '#60A5FA';
+                const stepsColors = { head: '#34D399', exceededHead: '#FBBF24' };
+                const heartColors = { head: '#60A5FA', exceededHead: '#F87171' };
+
+                // --- 4. Clear and Setup Canvas ---
+                ctx.fillStyle = '#111827';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // --- 5. Draw All Components ---
+                drawHeader();
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height * 0.45;
+                const lineWidth = 28;
+                const outerRadius = canvas.width * 0.3;
+                const innerRadius = outerRadius - lineWidth - 20;
+                const actualStepsPercentage = (completedSteps / targetSteps) * 100;
+                const actualHeartPointsPercentage = (heartPoints / targetHeartPoints) * 100;
+
+                drawSolidRing(centerX, centerY, outerRadius, lineWidth, '#374151', stepsColors, actualStepsPercentage);
+                drawSolidRing(centerX, centerY, innerRadius, lineWidth, '#374151', heartColors, actualHeartPointsPercentage);
+
+                drawCentralText(centerX, centerY, heartPoints, completedSteps, heartPointsTextColor);
+
+                const bottomY = canvas.height * 0.82;
+                drawBottomStats(bottomY, caloriesBurned, distanceKm, Math.round(moveMin));
+                
+                const footerY = canvas.height * 0.95;
+                drawFooterText(footerY);
+            }
+
+            // --- Helper Functions ---
+            function drawHeader() {
+                const margin = 60;
+                const now = new Date();
+                const dateString = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = `600 36px 'Inter'`;
+                ctx.textAlign = 'left';
+                ctx.fillText("Today's Summary", margin, margin + 20);
+                
+                ctx.fillStyle = '#9CA3AF';
+                ctx.font = `400 28px 'Inter'`;
+                ctx.fillText(dateString, margin, margin + 65);
+
+                const profilePicSize = 90;
+                const profileX = canvas.width - margin - (profilePicSize / 2);
+                const profileY = margin + 30;
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(profileX, profileY, profilePicSize / 2, 0, Math.PI * 2, true);
+                ctx.clip();
+
+                if (profileImage) {
+                    // --- FIX: Logic to zoom and crop image to fill the circle ---
+                    const imgWidth = profileImage.width;
+                    const imgHeight = profileImage.height;
+                    const aspectRatio = imgWidth / imgHeight;
+
+                    let drawWidth, drawHeight;
+
+                    if (aspectRatio < 1) { // Image is taller than it is wide
+                        drawWidth = profilePicSize;
+                        drawHeight = profilePicSize / aspectRatio;
+                    } else { // Image is wider than it is tall, or square
+                        drawHeight = profilePicSize;
+                        drawWidth = profilePicSize * aspectRatio;
+                    }
+                    
+                    const offsetX = (profilePicSize - drawWidth) / 2;
+                    const offsetY = (profilePicSize - drawHeight) / 2;
+                    
+                    const destX = profileX - profilePicSize / 2 + offsetX;
+                    const destY = profileY - profilePicSize / 2 + offsetY;
+
+                    ctx.drawImage(profileImage, destX, destY, drawWidth, drawHeight);
+                } else {
+                    ctx.fillStyle = '#374151';
+                    ctx.fillRect(profileX - profilePicSize/2, profileY - profilePicSize/2, profilePicSize, profilePicSize);
+                    ctx.fillStyle = '#9CA3AF';
+                    ctx.font = `bold ${profilePicSize * 0.5}px 'Inter'`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('P', profileX, profileY);
+                }
+                ctx.restore();
+                
+                ctx.beginPath();
+                ctx.arc(profileX, profileY, profilePicSize / 2, 0, Math.PI * 2, true);
+                ctx.strokeStyle = '#111827';
+                ctx.lineWidth = 10;
+                ctx.stroke();
+            }
+
+            function drawCentralText(cx, cy, heartPts, steps, color) {
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 5;
+
+                ctx.fillStyle = color;
+                ctx.font = `900 ${canvas.width * 0.18}px 'Inter'`;
+                ctx.fillText(heartPts, cx, cy - canvas.height * 0.03);
+                
+                ctx.shadowColor = 'transparent';
+
+                ctx.fillStyle = '#D1D5DB';
+                ctx.font = `500 ${canvas.width * 0.05}px 'Inter'`;
+                ctx.fillText(`${steps.toLocaleString()} Steps`, cx, cy + canvas.height * 0.05);
+            }
+
+            function drawBottomStats(y, calories, distance, minutes) {
+                const statWidth = canvas.width / 3;
+                drawStatWithIcon(statWidth * 0.5, y, calories.toLocaleString(), "Calories", '#FBBF24', drawFlameIcon);
+                drawStatWithIcon(statWidth * 1.5, y, distance, "Distance (km)", '#34D399', drawMapPinIcon);
+                drawStatWithIcon(statWidth * 2.5, y, minutes, "Move Mins", '#60A5FA', drawClockIcon);
+            }
+            
+            function drawFooterText(y) {
+                ctx.textAlign = 'center';
+                ctx.font = "italic 500 22px 'Inter'";
+                
+                // Add a glowing effect
+                ctx.shadowColor = '#a5b4fc'; // A light indigo for the glow
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = '#e0e7ff'; // A very light indigo for the text
+                
+                const text1 = "Failed the wellness challenge, but not the ritual...";
+                const text2 = "oops 😉";
+                
+                ctx.fillText(text1, canvas.width / 2, y);
+                ctx.fillText(text2, canvas.width / 2, y + 30);
+                
+                // Reset shadow for other elements
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+            }
+
+            function drawStatWithIcon(x, y, value, label, color, iconDrawer) {
+                iconDrawer(x, y - 100, 40, color);
+                
+                ctx.fillStyle = '#F9FAFB';
+                ctx.font = `700 48px 'Inter'`;
+                ctx.textAlign = 'center';
+                ctx.fillText(value, x, y);
+
+                ctx.fillStyle = '#9CA3AF';
+                ctx.font = `500 28px 'Inter'`;
+                ctx.fillText(label, x, y + 40);
+            }
+
+            function drawSolidRing(cx, cy, radius, width, bgColor, colors, actualPercentage) {
+                const startAngle = -Math.PI / 2;
+                
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+                ctx.lineWidth = width;
+                ctx.strokeStyle = bgColor;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                if (actualPercentage <= 0) return;
+
+                const basePercentage = Math.min(100, actualPercentage);
+                const exceededPercentage = Math.max(0, actualPercentage - 100);
+
+                const baseEndAngle = startAngle + (2 * Math.PI) * (basePercentage / 100);
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, startAngle, baseEndAngle);
+                ctx.strokeStyle = colors.head;
+                ctx.lineWidth = width;
+                ctx.stroke();
+
+                if (exceededPercentage > 0) {
+                    const exceededEndAngle = startAngle + (2 * Math.PI) * (exceededPercentage / 100);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, startAngle, exceededEndAngle);
+                    ctx.strokeStyle = colors.exceededHead;
+                    ctx.lineWidth = width;
+                    ctx.stroke();
+                }
+            }
+            
+            // --- SVG-like Icon Drawing Functions ---
+            function drawFlameIcon(x, y, size, color) {
+                ctx.save();
+                ctx.translate(x - size / 2, y - size / 2);
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(size * 0.5, 0);
+                ctx.bezierCurveTo(size * 0.1, size * 0.4, size * 0.4, size * 0.8, size * 0.5, size);
+                ctx.bezierCurveTo(size * 0.6, size * 0.8, size * 0.9, size * 0.4, size * 0.5, 0);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function drawMapPinIcon(x, y, size, color) {
+                ctx.save();
+                ctx.translate(x - size / 2, y - size / 2);
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(size * 0.5, 0);
+                ctx.bezierCurveTo(size * 0.85, 0, size, size * 0.15, size, size * 0.5);
+                ctx.bezierCurveTo(size, size * 0.85, size * 0.5, size, size * 0.5, size);
+                ctx.bezierCurveTo(size * 0.5, size, 0, size * 0.85, 0, size * 0.5);
+                ctx.bezierCurveTo(0, size * 0.15, size * 0.15, 0, size * 0.5, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#111827';
+                ctx.beginPath();
+                ctx.arc(size * 0.5, size * 0.45, size * 0.15, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function drawClockIcon(x, y, size, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size * 0.1;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.arc(0, 0, size / 2, 0, 2 * Math.PI);
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, -size * 0.25);
+                ctx.moveTo(0, 0);
+                ctx.lineTo(size * 0.15, 0);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function downloadGraphic() {
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/png');
+                a.download = 'fitness-card.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            try {
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Lucide icons could not be initialized.', error);
+            }
+        });
+    </script>
+</body>
+</html>
